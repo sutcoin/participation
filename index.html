@@ -149,7 +149,7 @@
 </head>
 <body>
 
-  <h1 id="pageTitle">주정산금 자발적 재참여</h1>
+  <h1 id="pageTitle">주정산금 자발적 재참여 신청</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
@@ -230,7 +230,7 @@
 
     function openAdminPanel() {
       const pw = prompt("관리자 비밀번호를 입력하세요:");
-      if (pw === "@dmltls1004") {
+      if (pw === "admin123") {
         updateAdminList();
         document.getElementById('adminPanel').style.display = 'block';
       } else {
