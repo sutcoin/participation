@@ -5,6 +5,7 @@
   <title>주정산금 자발적 재참여</title> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -60,6 +61,12 @@
     .btn-submit:hover { background-color: #218838; }
     .btn-view { background-color: #007bff; color: white; }
     .btn-view:hover { background-color: #0069d9; }
+    .btn-admin {
+      background-color: #555;
+      color: white;
+    }
+    .btn-admin:hover { background-color: #333; }
+
     .btn-back {
       background-color: transparent;
       color: #ccc;
@@ -76,13 +83,7 @@
       color: #fff;
       border-color: #fff;
     }
-    .btn-admin {
-      background-color: #555;
-      color: white;
-    }
-    .btn-admin:hover {
-      background-color: #333;
-    }
+
     .credit-screen {
       display: none;
       position: fixed;
@@ -92,7 +93,6 @@
       height: 100%;
       background: black;
       color: yellow;
-      font-family: 'Noto Sans KR', sans-serif;
       font-size: 1.5em;
       overflow: hidden;
       z-index: 999;
@@ -138,9 +138,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .admin-delete:hover {
-      background: #c0392b;
-    }
+    .admin-delete:hover { background: #c0392b; }
   </style>
 </head>
 <body>
@@ -149,7 +147,7 @@
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
-    <input type="text" id="nickname" placeholder="예: 프로재참러">
+    <input type="text" id="nickname" placeholder="예: 홍길동">
     <label for="group">소속</label>
     <input type="text" id="group" placeholder="예: 한국">
     <label for="percent">퍼센트</label>
@@ -187,21 +185,27 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     let submissions = [];
 
-    const fetchSubmissions = () => {
-      onValue(ref(db, "submissions"), (snapshot) => {
-        const data = snapshot.val() || {};
-        submissions = Object.entries(data).map(([key, value]) => ({ key, ...value }));
-      });
-    };
+    // 🔥 Firebase 실시간 데이터 감지
+    onValue(ref(db, "submissions"), (snapshot) => {
+      const data = snapshot.val() || {};
+      submissions = Object.entries(data).map(([key, value]) => ({ key, ...value }));
 
-    fetchSubmissions();
+      if (document.getElementById('creditScreen').style.display === 'block') {
+        showCredits(true);
+      }
+      if (document.getElementById('adminPanel').style.display === 'block') {
+        updateAdminList();
+      }
+    });
 
+    // ✅ 신청 데이터 저장
     window.submitForm = () => {
-      const nickname = document.getElementById("nickname").value.trim();
-      const group = document.getElementById("group").value.trim();
-      const percent = document.getElementById("percent").value.trim();
+      const nickname = document.getElementById('nickname').value.trim();
+      const group = document.getElementById('group').value.trim();
+      const percent = document.getElementById('percent').value.trim();
 
       if (!nickname || !group || !percent) {
         alert("모든 항목을 입력해주세요.");
@@ -209,18 +213,23 @@
       }
 
       push(ref(db, "submissions"), {
-        nickname, group, percent, timestamp: Date.now()
+        nickname,
+        group,
+        percent,
+        timestamp: Date.now()
       });
 
-      alert("신청 감사합니다.");
-      document.getElementById("nickname").value = '';
-      document.getElementById("group").value = '';
-      document.getElementById("percent").value = '';
+      alert("신청 감사합니다!");
+
+      document.getElementById('nickname').value = '';
+      document.getElementById('group').value = '';
+      document.getElementById('percent').value = '';
     };
 
-    window.showCredits = () => {
+    // ⭐ 명단 보기
+    window.showCredits = (auto = false) => {
       if (submissions.length === 0) {
-        alert("명단이 비어있습니다.");
+        if (!auto) alert("명단이 비어있습니다.");
         return;
       }
 
@@ -247,6 +256,7 @@
       document.getElementById("pageTitle").style.display = "block";
     };
 
+    // 🔐 관리자 모드
     window.openAdminPanel = () => {
       const pw = prompt("관리자 비밀번호를 입력하세요:");
       if (pw === "admin123") {
@@ -257,6 +267,7 @@
       }
     };
 
+    // 관리자 목록 업데이트
     function updateAdminList() {
       const list = document.getElementById("adminList");
       list.innerHTML = "";
@@ -277,11 +288,13 @@
       });
     }
 
+    // 🔥 삭제 기능 (Firebase에서 실제 삭제)
     window.deleteSubmission = (key) => {
       if (confirm("정말 삭제하시겠습니까?")) {
         remove(ref(db, "submissions/" + key));
       }
     };
   </script>
+
 </body>
 </html>
