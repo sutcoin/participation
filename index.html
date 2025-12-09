@@ -151,4 +151,67 @@
   </div>
 
   <div class="credit-screen" id="creditScreen">
-    <div class="back-btn
+    <div class="back-btn-container">
+      <button class="btn-back" onclick="goBack()">뒤로가기</button>
+    </div>
+    <div class="scrolling-text" id="creditText"></div>
+  </div>
+
+  <script>
+    const submissions = [];
+
+    function submitForm() {
+      const nickname = document.getElementById('nickname').value.trim();
+      const group = document.getElementById('group').value.trim();
+      const percent = document.getElementById('percent').value.trim();
+
+      if (!nickname || !group || !percent) {
+        alert('모든 항목을 입력해주세요.');
+        return;
+      }
+
+      submissions.push({ nickname, group, percent });
+
+      alert('신청 감사합니다.');
+
+      // 입력값 초기화
+      document.getElementById('nickname').value = '';
+      document.getElementById('group').value = '';
+      document.getElementById('percent').value = '';
+    }
+
+    function showCredits() {
+      if (submissions.length === 0) {
+        alert('명단이 비어있습니다. 먼저 신청해주세요!');
+        return;
+      }
+
+      // 전체 명단 생성
+      let creditHTML = '=== 재참여 명단 ===\n\n';
+      submissions.forEach((item, index) => {
+        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
+      });
+
+      // 명단 삽입 및 화면 전환
+      const creditText = document.getElementById('creditText');
+      creditText.innerText = creditHTML;
+
+      document.getElementById('formContainer').style.display = 'none';
+      document.getElementById('pageTitle').style.display = 'none';
+      document.getElementById('creditScreen').style.display = 'block';
+
+      // 애니메이션 재시작
+      creditText.style.animation = 'none';
+      void creditText.offsetWidth;
+      creditText.style.animation = null;
+    }
+
+    function goBack() {
+      document.getElementById('creditScreen').style.display = 'none';
+      document.getElementById('formContainer').style.display = 'flex';
+      document.getElementById('pageTitle').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
