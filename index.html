@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>주정산금 자발적 재참여</title> 
+  <title>주정산금 자발적 재참여</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
 
@@ -61,12 +61,6 @@
     .btn-submit:hover { background-color: #218838; }
     .btn-view { background-color: #007bff; color: white; }
     .btn-view:hover { background-color: #0069d9; }
-    .btn-admin {
-      background-color: #555;
-      color: white;
-    }
-    .btn-admin:hover { background-color: #333; }
-
     .btn-back {
       background-color: transparent;
       color: #ccc;
@@ -83,7 +77,13 @@
       color: #fff;
       border-color: #fff;
     }
-
+    .btn-admin {
+      background-color: #555;
+      color: white;
+    }
+    .btn-admin:hover {
+      background-color: #333;
+    }
     .credit-screen {
       display: none;
       position: fixed;
@@ -93,6 +93,7 @@
       height: 100%;
       background: black;
       color: yellow;
+      font-family: 'Noto Sans KR', sans-serif;
       font-size: 1.5em;
       overflow: hidden;
       z-index: 999;
@@ -111,7 +112,6 @@
       from { transform: translateY(100%); }
       to { transform: translateY(-100%); }
     }
-
     #adminPanel {
       display: none;
       background: #fff;
@@ -138,18 +138,18 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .admin-delete:hover { background: #c0392b; }
+    .admin-delete:hover {
+      background: #c0392b;
+    }
   </style>
 </head>
 <body>
-
-  <h1 id="pageTitle">주정산금 자발적 재참여</h1> 
-
+  <h1 id="pageTitle">주정산금 자발적 재참여</h1>
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
-    <input type="text" id="nickname" placeholder="예: 닉네임">
+    <input type="text" id="nickname" placeholder="예: 홍길동">
     <label for="group">소속</label>
-    <input type="text" id="group" placeholder="예: 지역">
+    <input type="text" id="group" placeholder="예: 한국">
     <label for="percent">퍼센트</label>
     <input type="text" id="percent" placeholder="예: 50~100%">
     <button class="btn-submit" onclick="submitForm()">신청하기</button>
@@ -167,7 +167,6 @@
     <div id="adminList"></div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -177,7 +176,7 @@
       authDomain: "participation-4f85e.firebaseapp.com",
       databaseURL: "https://participation-4f85e-default-rtdb.firebaseio.com",
       projectId: "participation-4f85e",
-      storageBucket: "participation-4f85e.firebasestorage.app",
+      storageBucket: "participation-4f85e.appspot.com",
       messagingSenderId: "694493909568",
       appId: "1:694493909568:web:1ebf7b9394e2ddce3d05a5",
       measurementId: "G-6T8L975CVQ"
@@ -186,68 +185,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let submissions = [];
-
-    // 🔥 Firebase 실시간 데이터 감지
-    onValue(ref(db, "submissions"), (snapshot) => {
-      const data = snapshot.val() || {};
-      submissions = Object.entries(data).map(([key, value]) => ({ key, ...value }));
-
-      if (document.getElementById('creditScreen').style.display === 'block') {
-        showCredits(true);
-      }
-      if (document.getElementById('adminPanel').style.display === 'block') {
-        updateAdminList();
-      }
-    });
-
-    // ✅ 신청 데이터 저장
     window.submitForm = () => {
-      const nickname = document.getElementById('nickname').value.trim();
-      const group = document.getElementById('group').value.trim();
-      const percent = document.getElementById('percent').value.trim();
-
+      const nickname = document.getElementById("nickname").value.trim();
+      const group = document.getElementById("group").value.trim();
+      const percent = document.getElementById("percent").value.trim();
       if (!nickname || !group || !percent) {
         alert("모든 항목을 입력해주세요.");
         return;
       }
-
       push(ref(db, "submissions"), {
-        nickname,
-        group,
-        percent,
-        timestamp: Date.now()
+        nickname, group, percent, timestamp: Date.now()
       });
-
-      alert("신청 감사합니다!");
-
-      document.getElementById('nickname').value = '';
-      document.getElementById('group').value = '';
-      document.getElementById('percent').value = '';
+      alert("신청 감사합니다.");
+      document.getElementById("nickname").value = "";
+      document.getElementById("group").value = "";
+      document.getElementById("percent").value = "";
     };
 
-    // ⭐ 명단 보기
-    window.showCredits = (auto = false) => {
-      if (submissions.length === 0) {
-        if (!auto) alert("명단이 비어있습니다.");
-        return;
-      }
-
-      let creditHTML = '=== 재참여 명단 ===\n\n';
-      submissions.forEach((item, index) => {
-        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
-      });
-
+    window.showCredits = () => {
       const creditText = document.getElementById("creditText");
-      creditText.innerText = creditHTML;
-
-      document.getElementById("formContainer").style.display = "none";
-      document.getElementById("pageTitle").style.display = "none";
-      document.getElementById("creditScreen").style.display = "block";
-
-      creditText.classList.remove("scrolling-text");
-      void creditText.offsetWidth;
-      creditText.classList.add("scrolling-text");
+      onValue(ref(db, "submissions"), (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          alert("명단이 비어있습니다.");
+          return;
+        }
+        let creditHTML = '=== 재참여 명단 ===\\n\\n';
+        Object.values(data).forEach((item, index) => {
+          creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\\n`;
+        });
+        creditText.innerText = creditHTML;
+        document.getElementById("formContainer").style.display = "none";
+        document.getElementById("pageTitle").style.display = "none";
+        document.getElementById("creditScreen").style.display = "block";
+        creditText.classList.remove("scrolling-text");
+        void creditText.offsetWidth;
+        creditText.classList.add("scrolling-text");
+      }, { onlyOnce: true });
     };
 
     window.goBack = () => {
@@ -256,7 +230,6 @@
       document.getElementById("pageTitle").style.display = "block";
     };
 
-    // 🔐 관리자 모드
     window.openAdminPanel = () => {
       const pw = prompt("관리자 비밀번호를 입력하세요:");
       if (pw === "admin123") {
@@ -267,34 +240,33 @@
       }
     };
 
-    // 관리자 목록 업데이트
     function updateAdminList() {
       const list = document.getElementById("adminList");
-      list.innerHTML = "";
-
-      if (submissions.length === 0) {
-        list.innerHTML = "<p>신청된 항목이 없습니다.</p>";
-        return;
-      }
-
-      submissions.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "admin-item";
-        div.innerHTML = `
-          ${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}
-          <button class="admin-delete" onclick="deleteSubmission('${item.key}')">삭제</button>
-        `;
-        list.appendChild(div);
-      });
+      onValue(ref(db, "submissions"), (snapshot) => {
+        const data = snapshot.val();
+        list.innerHTML = "";
+        if (!data) {
+          list.innerHTML = "<p>신청된 항목이 없습니다.</p>";
+          return;
+        }
+        Object.entries(data).forEach(([key, item], index) => {
+          const div = document.createElement("div");
+          div.className = "admin-item";
+          div.innerHTML = `
+            ${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}
+            <button class="admin-delete" onclick="deleteSubmission('${key}')">삭제</button>
+          `;
+          list.appendChild(div);
+        });
+      }, { onlyOnce: true });
     }
 
-    // 🔥 삭제 기능 (Firebase에서 실제 삭제)
     window.deleteSubmission = (key) => {
       if (confirm("정말 삭제하시겠습니까?")) {
         remove(ref(db, "submissions/" + key));
+        updateAdminList();
       }
     };
   </script>
-
 </body>
 </html>
