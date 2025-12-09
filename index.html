@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>주정산금 자발적 재참여</title>
+  <title>주정산금 자발적 재참여 신청</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -34,10 +34,18 @@
       max-width: 400px;
     }
 
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      color: #222;
+    }
+
     input {
       width: 100%;
       padding: 12px;
-      margin-bottom: 15px;
+      margin-bottom: 5px;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 1em;
@@ -51,7 +59,7 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 10px;
+      margin-top: 15px;
     }
 
     .btn-submit {
@@ -72,6 +80,15 @@
       background-color: #0069d9;
     }
 
+    .btn-back {
+      background-color: #ff4444;
+      color: white;
+    }
+
+    .btn-back:hover {
+      background-color: #cc0000;
+    }
+
     .credit-screen {
       display: none;
       position: fixed;
@@ -85,6 +102,7 @@
       font-size: 1.5em;
       overflow: hidden;
       z-index: 999;
+      padding-top: 60px;
     }
 
     .scrolling-text {
@@ -101,68 +119,26 @@
       from { bottom: -100%; }
       to { bottom: 100%; }
     }
+
+    .back-btn-container {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>주정산금 자발적 재참여 신청</h1>
+  <h1>주정산금 자발적 재참여</h1>
 
-  <div class="form-container">
-    <input type="text" id="nickname" placeholder="닉네임 (예: 홍길동)">
-    <input type="text" id="group" placeholder="소속 (예: 한국)">
-    <input type="text" id="percent" placeholder="퍼센트 (예: 50~100%)">
+  <div class="form-container" id="formContainer">
+    <label for="nickname">닉네임</label>
+    <input type="text" id="nickname" placeholder="예: 홍길동">
 
-    <button class="btn-submit" onclick="submitForm()">신청하기</button>
-    <button class="btn-view" onclick="showCredits()">재참여 명단 보기</button>
-  </div>
+    <label for="group">소속</label>
+    <input type="text" id="group" placeholder="예: 한국">
 
-  <div class="credit-screen" id="creditScreen">
-    <div class="scrolling-text" id="creditText"></div>
-  </div>
-
-  <script>
-    const submissions = [];
-
-    function submitForm() {
-      const nickname = document.getElementById('nickname').value.trim();
-      const group = document.getElementById('group').value.trim();
-      const percent = document.getElementById('percent').value.trim();
-
-      if (!nickname || !group || !percent) {
-        alert('모든 항목을 입력해주세요.');
-        return;
-      }
-
-      submissions.push({ nickname, group, percent });
-      alert('신청이 완료되었습니다!');
-      document.getElementById('nickname').value = '';
-      document.getElementById('group').value = '';
-      document.getElementById('percent').value = '';
-    }
-
-    function showCredits() {
-      if (submissions.length === 0) {
-        alert('명단이 비어있습니다. 먼저 신청해주세요!');
-        return;
-      }
-
-      let creditHTML = '=== 재참여 명단 ===\n\n';
-      submissions.forEach((item, index) => {
-        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
-      });
-
-      document.getElementById('creditText').innerText = creditHTML;
-      document.querySelector('.form-container').style.display = 'none';
-      document.querySelector('h1').style.display = 'none';
-      const creditScreen = document.getElementById('creditScreen');
-      creditScreen.style.display = 'block';
-
-      const text = document.getElementById('creditText');
-      text.style.animation = 'none';
-      void text.offsetWidth;
-      text.style.animation = null;
-    }
-  </script>
-
-</body>
-</html>
+    <labe
