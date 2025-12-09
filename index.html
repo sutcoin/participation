@@ -1,95 +1,22 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <title>주정산금 자발적 재참여 신청</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f9f9f9;
-      padding: 40px 20px;
-      text-align: center;
-    }
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-  <div class="container">
-    <h1>주정산금 자발적 재참여 신청</h1>
-    <input type="text" id="nickname" placeholder="닉네임 (예: 홍길동)" />
-    <input type="text" id="group" placeholder="소속 (예: 한국)" />
-    <input type="text" id="percent" placeholder="퍼센트 (예: 50~100%)" />
-    <button onclick="submitForm()">신청하기</button>
-  </div>
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
+  authDomain: "participation-4f85e.firebaseapp.com",
+  databaseURL: "https://participation-4f85e-default-rtdb.firebaseio.com",
+  projectId: "participation-4f85e",
+  storageBucket: "participation-4f85e.firebasestorage.app",
+  messagingSenderId: "694493909568",
+  appId: "1:694493909568:web:1ebf7b9394e2ddce3d05a5",
+  measurementId: "G-6T8L975CVQ"
+};
 
-  <!-- Firebase SDK 추가 -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-  <script>
-    // 🔐 1. 여기에 당신의 firebaseConfig 정보 넣기
-    const firebaseConfig = {
-      apiKey: "여기에_당신의_API_키",
-      authDomain: "your-project-id.firebaseapp.com",
-      databaseURL: "https://your-project-id.firebaseio.com",
-      projectId: "your-project-id",
-      storageBucket: "your-project-id.appspot.com",
-      messagingSenderId: "보낸사람ID",
-      appId: "앱ID"
-    };
-
-    // 🔧 2. Firebase 초기화
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // 📤 3. 신청 데이터 전송
-    function submitForm() {
-      const nickname = document.getElementById("nickname").value.trim();
-      const group = document.getElementById("group").value.trim();
-      const percent = document.getElementById("percent").value.trim();
-
-      if (!nickname || !group || !percent) {
-        alert("모든 항목을 입력해주세요.");
-        return;
-      }
-
-      db.ref("submissions").push({
-        nickname,
-        group,
-        percent,
-        timestamp: Date.now()
-      });
-
-      alert("신청이 완료되었습니다!");
-      document.g
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
