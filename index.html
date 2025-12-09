@@ -32,6 +32,8 @@
       padding: 30px;
       width: 100%;
       max-width: 400px;
+      display: flex;
+      flex-direction: column;
     }
 
     label {
@@ -132,7 +134,7 @@
 </head>
 <body>
 
-  <h1>주정산금 자발적 재참여</h1>
+  <h1 id="pageTitle">주정산금 자발적 재참여 신청</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
@@ -141,4 +143,12 @@
     <label for="group">소속</label>
     <input type="text" id="group" placeholder="예: 한국">
 
-    <labe
+    <label for="percent">퍼센트</label>
+    <input type="text" id="percent" placeholder="예: 50~100%">
+
+    <button class="btn-submit" onclick="submitForm()">신청하기</button>
+    <button class="btn-view" onclick="showCredits()">재참여 명단 보기</button>
+  </div>
+
+  <div class="credit-screen" id="creditScreen">
+    <div class="back-btn
