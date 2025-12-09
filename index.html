@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <title>주정산금 자발적 재참여 신청</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Noto Sans KR 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
 
   <style>
@@ -106,7 +104,7 @@
       bottom: 0;
       width: 100%;
       text-align: center;
-      animation: scrollUp 30s linear forwards;
+      animation: scrollUp 15s linear forwards;
       white-space: pre-line;
       padding: 0 20px;
     }
@@ -149,18 +147,15 @@
 </head>
 <body>
 
-  <h1 id="pageTitle">주정산금 자발적 재참여</h1>
+  <h1 id="pageTitle">주정산금 자발적 재참여 신청</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
     <input type="text" id="nickname" placeholder="예: 홍길동">
-
     <label for="group">소속</label>
     <input type="text" id="group" placeholder="예: 한국">
-
     <label for="percent">퍼센트</label>
     <input type="text" id="percent" placeholder="예: 50~100%">
-
     <button class="btn-submit" onclick="submitForm()">신청하기</button>
     <button class="btn-view" onclick="showCredits()">재참여 명단 보기</button>
     <button class="btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
@@ -171,14 +166,25 @@
     <div class="scrolling-text" id="creditText"></div>
   </div>
 
-  <!-- 🔒 관리자 패널 -->
   <div id="adminPanel">
     <h3>관리자 패널</h3>
     <div id="adminList"></div>
   </div>
 
   <script>
-    const submissions = [];
+    let submissions = [];
+
+    // 🚀 초기 로딩 시 localStorage 불러오기
+    window.onload = () => {
+      const saved = localStorage.getItem("submissions");
+      if (saved) {
+        submissions = JSON.parse(saved);
+      }
+    };
+
+    function saveSubmissions() {
+      localStorage.setItem("submissions", JSON.stringify(submissions));
+    }
 
     function submitForm() {
       const nickname = document.getElementById('nickname').value.trim();
@@ -191,7 +197,7 @@
       }
 
       submissions.push({ nickname, group, percent });
-
+      saveSubmissions(); // 저장
       alert('신청 감사합니다.');
 
       document.getElementById('nickname').value = '';
@@ -261,6 +267,7 @@
     function deleteSubmission(index) {
       if (confirm("정말 삭제하시겠습니까?")) {
         submissions.splice(index, 1);
+        saveSubmissions();
         updateAdminList();
       }
     }
