@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>주정산금 자발적 재참여 신청</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to bottom, #000000, #1a1a1a);
+      color: #ffffff;
+      text-align: center;
+      overflow: hidden;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 2em;
+    }
+    .form-section {
+      margin: 40px auto;
+      max-width: 400px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1em;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #4444dd;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3333bb;
+    }
+
+    .credit-screen {
+      display: none;
+      position: absolute;
+      top: 100%;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: yellow;
+      font-family: 'Courier New', monospace;
+      font-size: 1.5em;
+      overflow: hidden;
+    }
+
+    .scrolling-text {
+      position: absolute;
+      bottom: -100%;
+      width: 100%;
+      animation: scrollUp 30s linear forwards;
+      white-space: pre-line;
+    }
+
+    @keyframes scrollUp {
+      from { bottom: -100%; }
+      to { bottom: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>주정산금 자발적 재참여 신청</h1>
+
+  <div class="form-section">
+    <input type="text" id="nickname" placeholder="닉네임 (예: 홍길동)">
+    <input type="text" id="group" placeholder="소속 (예: 한국)">
+    <input type="text" id="percent" placeholder="퍼센트 (예: 50~100%)">
+    <button onclick="submitForm()">신청하기</button>
+    <button onclick="showCredits()">재참여 명단 보기</button>
+  </div>
+
+  <div class="credit-screen" id="creditScreen">
+    <div class="scrolling-text" id="creditText"></div>
+  </div>
+
+  <script>
+    const submissions = [];
+
+    function submitForm() {
+      const nickname = document.getElementById('nickname').value.trim();
+      const group = document.getElementById('group').value.trim();
+      const percent = document.getElementById('percent').value.trim();
+
+      if (!nickname || !group || !percent) {
+        alert('모든 항목을 입력해주세요.');
+        return;
+      }
+
+      submissions.push({ nickname, group, percent });
+      alert('신청이 완료되었습니다!');
+      document.getElementById('nickname').value = '';
+      document.getElementById('group').value = '';
+      document.getElementById('percent').value = '';
+    }
+
+    function showCredits() {
+      if (submissions.length === 0) {
+        alert('명단이 비어있습니다. 먼저 신청해주세요!');
+        return;
+      }
+
+      let creditHTML = '=== 재참여 명단 ===\n\n';
+      submissions.forEach((item, index) => {
+        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
+      });
+
+      document.getElementById('creditText').innerText = creditHTML;
+      document.querySelector('.form-section').style.display = 'none';
+      const creditScreen = document.getElementById('creditScreen');
+      creditScreen.style.display = 'block';
+
+      // 애니메이션 재시작
+      const text = document.getElementById('creditText');
+      text.style.animation = 'none';
+      void text.offsetWidth;
+      text.style.animation = null;
+    }
+  </script>
+</body>
+</html>
