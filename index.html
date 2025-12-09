@@ -11,150 +11,59 @@
 
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
-      color: #ffffff;
+      background-color: #f2f2f2;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
       padding: 40px 20px;
     }
 
     h1 {
-      font-size: 1.8em;
+      text-align: center;
+      color: #333;
       margin-bottom: 20px;
-      color: #00ffcc;
     }
 
-    .form-card {
-      background-color: #1e1e1e;
+    .form-container {
+      background-color: #fff;
       border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
       width: 100%;
       max-width: 400px;
-      box-shadow: 0 0 15px rgba(0, 255, 200, 0.1);
     }
 
     input {
       width: 100%;
       padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #333;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      background-color: #2a2a2a;
-      color: #fff;
       font-size: 1em;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      margin-top: 12px;
       font-size: 1em;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background-color: #00c896;
-      color: #000;
-      transition: background 0.3s;
+      margin-bottom: 10px;
     }
 
-    button:hover {
-      background-color: #00e0ac;
+    .btn-submit {
+      background-color: #28a745;
+      color: white;
     }
 
-    .credit-screen {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      color: yellow;
-      font-family: 'Courier New', monospace;
-      font-size: 1.5em;
-      overflow: hidden;
-      z-index: 999;
+    .btn-submit:hover {
+      background-color: #218838;
     }
 
-    .scrolling-text {
-      position: absolute;
-      bottom: -100%;
-      width: 100%;
-      text-align: center;
-      animation: scrollUp 30s linear forwards;
-      white-space: pre-line;
-      padding: 0 20px;
+    .btn-view {
+      background-color: #007bff;
+      color: white;
     }
-
-    @keyframes scrollUp {
-      from { bottom: -100%; }
-      to { bottom: 100%; }
-    }
-  </style>
-</head>
-<body>
-  <h1>주정산금 자발적 재참여 신청</h1>
-
-  <div class="form-card">
-    <input type="text" id="nickname" placeholder="닉네임 (예: 홍길동)">
-    <input type="text" id="group" placeholder="소속 (예: 한국)">
-    <input type="text" id="percent" placeholder="퍼센트 (예: 50~100%)">
-    <button onclick="submitForm()">신청하기</button>
-    <button onclick="showCredits()">재참여 명단 보기</button>
-  </div>
-
-  <div class="credit-screen" id="creditScreen">
-    <div class="scrolling-text" id="creditText"></div>
-  </div>
-
-  <script>
-    const submissions = [];
-
-    function submitForm() {
-      const nickname = document.getElementById('nickname').value.trim();
-      const group = document.getElementById('group').value.trim();
-      const percent = document.getElementById('percent').value.trim();
-
-      if (!nickname || !group || !percent) {
-        alert('모든 항목을 입력해주세요.');
-        return;
-      }
-
-      submissions.push({ nickname, group, percent });
-      alert('신청이 완료되었습니다!');
-      document.getElementById('nickname').value = '';
-      document.getElementById('group').value = '';
-      document.getElementById('percent').value = '';
-    }
-
-    function showCredits() {
-      if (submissions.length === 0) {
-        alert('명단이 비어있습니다. 먼저 신청해주세요!');
-        return;
-      }
-
-      let creditHTML = '=== 재참여 명단 ===\n\n';
-      submissions.forEach((item, index) => {
-        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
-      });
-
-      document.getElementById('creditText').innerText = creditHTML;
-      document.querySelector('.form-card').style.display = 'none';
-      document.querySelector('h1').style.display = 'none';
-      const creditScreen = document.getElementById('creditScreen');
-      creditScreen.style.display = 'block';
-
-      const text = document.getElementById('creditText');
-      text.style.animation = 'none';
-      void text.offsetWidth;
-      text.style.animation = null;
-    }
-  </script>
-</body>
-</html>
