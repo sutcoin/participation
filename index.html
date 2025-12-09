@@ -4,27 +4,26 @@
   <meta charset="UTF-8">
   <title>주정산금 자발적 재참여 신청</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
 
+  <!-- Noto Sans KR 폰트 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Noto Sans KR', sans-serif;
       background-color: #f2f2f2;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 40px 20px;
     }
-
     h1 {
       text-align: center;
       color: #333;
       margin-bottom: 20px;
     }
-
     .form-container {
       background-color: #fff;
       border-radius: 12px;
@@ -35,7 +34,6 @@
       display: flex;
       flex-direction: column;
     }
-
     label {
       display: block;
       font-weight: bold;
@@ -43,7 +41,6 @@
       margin-bottom: 5px;
       color: #222;
     }
-
     input {
       width: 100%;
       padding: 12px;
@@ -52,7 +49,6 @@
       border-radius: 8px;
       font-size: 1em;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -63,34 +59,33 @@
       cursor: pointer;
       margin-top: 15px;
     }
-
-    .btn-submit {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .btn-submit:hover {
-      background-color: #218838;
-    }
-
-    .btn-view {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .btn-view:hover {
-      background-color: #0069d9;
-    }
-
+    .btn-submit { background-color: #28a745; color: white; }
+    .btn-submit:hover { background-color: #218838; }
+    .btn-view { background-color: #007bff; color: white; }
+    .btn-view:hover { background-color: #0069d9; }
     .btn-back {
-      background-color: #ff4444;
+      background-color: transparent;
+      color: #ccc;
+      border: 1px solid #777;
+      padding: 8px 16px;
+      font-size: 0.9em;
+      width: auto;
+      border-radius: 6px;
+      margin: 10px auto 20px;
+      display: block;
+    }
+    .btn-back:hover {
+      background-color: #222;
+      color: #fff;
+      border-color: #fff;
+    }
+    .btn-admin {
+      background-color: #555;
       color: white;
     }
-
-    .btn-back:hover {
-      background-color: #cc0000;
+    .btn-admin:hover {
+      background-color: #333;
     }
-
     .credit-screen {
       display: none;
       position: fixed;
@@ -100,35 +95,55 @@
       height: 100%;
       background: black;
       color: yellow;
-      font-family: 'Courier New', monospace;
+      font-family: 'Noto Sans KR', sans-serif;
       font-size: 1.5em;
       overflow: hidden;
       z-index: 999;
-      padding-top: 60px;
+      padding-top: 20px;
     }
-
     .scrolling-text {
       position: absolute;
-      bottom: -100%;
+      bottom: 0;
       width: 100%;
       text-align: center;
       animation: scrollUp 30s linear forwards;
       white-space: pre-line;
       padding: 0 20px;
     }
-
     @keyframes scrollUp {
-      from { bottom: -100%; }
-      to { bottom: 100%; }
+      from { transform: translateY(100%); }
+      to { transform: translateY(-100%); }
     }
 
-    .back-btn-container {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 400px;
+    /* 관리자 패널 */
+    #adminPanel {
+      display: none;
+      background: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .admin-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+      font-size: 0.95em;
+    }
+    .admin-delete {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .admin-delete:hover {
+      background: #c0392b;
     }
   </style>
 </head>
@@ -148,13 +163,18 @@
 
     <button class="btn-submit" onclick="submitForm()">신청하기</button>
     <button class="btn-view" onclick="showCredits()">재참여 명단 보기</button>
+    <button class="btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
   </div>
 
   <div class="credit-screen" id="creditScreen">
-    <div class="back-btn-container">
-      <button class="btn-back" onclick="goBack()">뒤로가기</button>
-    </div>
+    <button class="btn-back" onclick="goBack()">← 뒤로가기</button>
     <div class="scrolling-text" id="creditText"></div>
+  </div>
+
+  <!-- 🔒 관리자 패널 -->
+  <div id="adminPanel">
+    <h3>관리자 패널</h3>
+    <div id="adminList"></div>
   </div>
 
   <script>
@@ -174,7 +194,6 @@
 
       alert('신청 감사합니다.');
 
-      // 입력값 초기화
       document.getElementById('nickname').value = '';
       document.getElementById('group').value = '';
       document.getElementById('percent').value = '';
@@ -186,13 +205,11 @@
         return;
       }
 
-      // 전체 명단 생성
       let creditHTML = '=== 재참여 명단 ===\n\n';
       submissions.forEach((item, index) => {
         creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}\n`;
       });
 
-      // 명단 삽입 및 화면 전환
       const creditText = document.getElementById('creditText');
       creditText.innerText = creditHTML;
 
@@ -200,16 +217,52 @@
       document.getElementById('pageTitle').style.display = 'none';
       document.getElementById('creditScreen').style.display = 'block';
 
-      // 애니메이션 재시작
-      creditText.style.animation = 'none';
+      creditText.classList.remove('scrolling-text');
       void creditText.offsetWidth;
-      creditText.style.animation = null;
+      creditText.classList.add('scrolling-text');
     }
 
     function goBack() {
       document.getElementById('creditScreen').style.display = 'none';
       document.getElementById('formContainer').style.display = 'flex';
       document.getElementById('pageTitle').style.display = 'block';
+    }
+
+    function openAdminPanel() {
+      const pw = prompt("관리자 비밀번호를 입력하세요:");
+      if (pw === "@dmltls1004") {
+        updateAdminList();
+        document.getElementById('adminPanel').style.display = 'block';
+      } else {
+        alert("비밀번호가 올바르지 않습니다.");
+      }
+    }
+
+    function updateAdminList() {
+      const list = document.getElementById('adminList');
+      list.innerHTML = "";
+
+      if (submissions.length === 0) {
+        list.innerHTML = "<p>신청된 항목이 없습니다.</p>";
+        return;
+      }
+
+      submissions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "admin-item";
+        div.innerHTML = `
+          ${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}
+          <button class="admin-delete" onclick="deleteSubmission(${index})">삭제</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function deleteSubmission(index) {
+      if (confirm("정말 삭제하시겠습니까?")) {
+        submissions.splice(index, 1);
+        updateAdminList();
+      }
     }
   </script>
 
