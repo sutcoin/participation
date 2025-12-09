@@ -3,44 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <title>주정산금 자발적 재참여 신청</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(to bottom, #000000, #1a1a1a);
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
       color: #ffffff;
-      text-align: center;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
     }
+
     h1 {
-      margin-top: 40px;
-      font-size: 2em;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      color: #00ffcc;
     }
-    .form-section {
-      margin: 40px auto;
-      max-width: 400px;
-    }
-    input, button {
+
+    .form-card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 30px;
       width: 100%;
-      padding: 10px;
+      max-width: 400px;
+      box-shadow: 0 0 15px rgba(0, 255, 200, 0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
       margin: 10px 0;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background-color: #2a2a2a;
+      color: #fff;
       font-size: 1em;
-      border-radius: 5px;
-      border: none;
     }
+
     button {
-      background-color: #4444dd;
-      color: white;
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      background-color: #00c896;
+      color: #000;
+      transition: background 0.3s;
     }
+
     button:hover {
-      background-color: #3333bb;
+      background-color: #00e0ac;
     }
 
     .credit-screen {
       display: none;
-      position: absolute;
-      top: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       background: black;
@@ -48,14 +79,17 @@
       font-family: 'Courier New', monospace;
       font-size: 1.5em;
       overflow: hidden;
+      z-index: 999;
     }
 
     .scrolling-text {
       position: absolute;
       bottom: -100%;
       width: 100%;
+      text-align: center;
       animation: scrollUp 30s linear forwards;
       white-space: pre-line;
+      padding: 0 20px;
     }
 
     @keyframes scrollUp {
@@ -67,7 +101,7 @@
 <body>
   <h1>주정산금 자발적 재참여 신청</h1>
 
-  <div class="form-section">
+  <div class="form-card">
     <input type="text" id="nickname" placeholder="닉네임 (예: 홍길동)">
     <input type="text" id="group" placeholder="소속 (예: 한국)">
     <input type="text" id="percent" placeholder="퍼센트 (예: 50~100%)">
@@ -111,11 +145,11 @@
       });
 
       document.getElementById('creditText').innerText = creditHTML;
-      document.querySelector('.form-section').style.display = 'none';
+      document.querySelector('.form-card').style.display = 'none';
+      document.querySelector('h1').style.display = 'none';
       const creditScreen = document.getElementById('creditScreen');
       creditScreen.style.display = 'block';
 
-      // 애니메이션 재시작
       const text = document.getElementById('creditText');
       text.style.animation = 'none';
       void text.offsetWidth;
