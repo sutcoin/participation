@@ -57,6 +57,7 @@
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      position: relative;
     }
 
     .group-item {
@@ -67,17 +68,35 @@
     .group-item:hover {
       background: #f9f9f9;
     }
+
     .back-btn {
       position: absolute;
       top: 10px;
-      right: 10px;
-      background: none;
+      left: 10px;
+      background: #ddd;
+      color: #000;
+      font-weight: bold;
       border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
       cursor: pointer;
+      font-size: 14px;
     }
-    .back-btn img {
-      width: 40px;
-      height: 40px;
+    .back-btn:hover {
+      background: #ccc;
+    }
+
+    .total-count {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .highlight-number {
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -98,48 +117,49 @@
   </div>
 
   <div class="group-list" id="groupList" style="display:none;">
-    <button class="back-btn" onclick="goBack()">
-      <img src="https://gptonline.ai/files/back-arrow.png" alt="뒤로가기" />
-    </button>
+    <button class="back-btn" onclick="goBack()">←</button>
     <h2>소속별 참여 현황</h2>
+    <div class="total-count">
+      현재 참여한 인원 <span class="highlight-number" id="totalCount">0</span>명
+    </div>
     <div id="groupItems"></div>
   </div>
 
   <div class="member-list" id="memberList" style="display:none;">
-    <button class="back-btn" onclick="showGroups()">
-      <img src="https://gptonline.ai/files/back-arrow.png" alt="뒤로가기" />
-    </button>
+    <button class="back-btn" onclick="showGroups()">←</button>
     <h2 id="memberTitle"></h2>
     <div id="memberItems"></div>
   </div>
 
   <script>
-    let submissions = {};
+    let submissions = [];
 
     window.onload = () => {
-      const saved = localStorage.getItem("submissions");
+      const saved = localStorage.getItem("submissions_v2");
       if (saved) {
         submissions = JSON.parse(saved);
       }
     };
 
-    function normalizeGroup(group) {
-      return group.replace(/\\s+/g, "");
+    function normalizeGroupName(name) {
+      return name.replace(/\s+/g, "");
     }
 
     function submitForm() {
       const nickname = document.getElementById("nickname").value.trim();
-      const group = normalizeGroup(document.getElementById("group").value.trim());
+      const group = document.getElementById("group").value.trim();
       const percent = document.getElementById("percent").value.trim();
       if (!nickname || !group || !percent) {
         alert("모든 항목을 입력해주세요.");
         return;
       }
-      if (!submissions[group]) {
-        submissions[group] = [];
-      }
-      submissions[group].push({ nickname, percent });
-      localStorage.setItem("submissions", JSON.stringify(submissions));
+      submissions.push({
+        nickname,
+        group,
+        normalizedGroup: normalizeGroupName(group),
+        percent
+      });
+      localStorage.setItem("submissions_v2", JSON.stringify(submissions));
       alert("신청 감사합니다.");
       document.getElementById("nickname").value = "";
       document.getElementById("group").value = "";
@@ -151,28 +171,42 @@
       document.getElementById("groupList").style.display = "block";
       document.getElementById("memberList").style.display = "none";
 
+      const groupMap = {};
+      submissions.forEach(entry => {
+        const key = entry.normalizedGroup;
+        if (!groupMap[key]) {
+          groupMap[key] = { displayName: entry.group, list: [] };
+        }
+        groupMap[key].list.push(entry);
+      });
+
       const groupItems = document.getElementById("groupItems");
       groupItems.innerHTML = "";
-      const sorted = Object.entries(submissions).sort((a, b) => b[1].length - a[1].length);
-      sorted.forEach(([group, members]) => {
+
+      const sorted = Object.entries(groupMap).sort((a, b) => b[1].list.length - a[1].list.length);
+      sorted.forEach(([key, groupData]) => {
         const div = document.createElement("div");
         div.className = "group-item";
-        div.innerText = group + " / " + members.length;
-        div.onclick = () => showMembers(group);
+        div.innerText = `${groupData.displayName} / ${groupData.list.length}`;
+        div.onclick = () => showMembers(groupData.displayName, groupData.list);
         groupItems.appendChild(div);
       });
+
+      // ✅ 총 인원 수 표시
+      const total = submissions.length;
+      document.getElementById("totalCount").innerText = total;
     }
 
-    function showMembers(group) {
+    function showMembers(groupName, list) {
       document.getElementById("groupList").style.display = "none";
       document.getElementById("memberList").style.display = "block";
-      document.getElementById("memberTitle").innerText = `${group} 참여자 명단`;
+      document.getElementById("memberTitle").innerText = `${groupName} 참여자 명단`;
 
       const memberItems = document.getElementById("memberItems");
       memberItems.innerHTML = "";
-      submissions[group].forEach((user, i) => {
+      list.forEach((item, i) => {
         const div = document.createElement("div");
-        div.innerText = `${i + 1}. ${user.nickname} / ${user.percent}`;
+        div.innerText = `${i + 1}. ${item.nickname} / ${item.percent}`;
         memberItems.appendChild(div);
       });
     }
