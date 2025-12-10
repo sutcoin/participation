@@ -59,24 +59,27 @@
       });
     };
 
-    window.goBack = () => {
-      document.getElementById("groupList").style.display = "block";
-      document.getElementById("memberList").style.display = "none";
-    };
-
     function showMembers(groupName, members) {
       const memberList = document.getElementById("memberList");
       const memberItems = document.getElementById("memberItems");
-      memberItems.innerHTML = "";
+      const backBtn = document.getElementById("backBtn");
 
+      memberItems.innerHTML = "";
       members.forEach((m) => {
-        const item = document.createElement("div");
-        item.textContent = `${m.nickname} / ${m.percent}`;
-        memberItems.appendChild(item);
+        const div = document.createElement("div");
+        div.textContent = `${m.nickname} / ${m.percent}`;
+        memberItems.appendChild(div);
       });
 
-      document.getElementById("groupList").style.display = "none";
+      document.getElementById("groupSection").style.display = "none";
       memberList.style.display = "block";
+      backBtn.style.display = "inline-block";
+    }
+
+    function goBack() {
+      document.getElementById("memberList").style.display = "none";
+      document.getElementById("groupSection").style.display = "block";
+      document.getElementById("backBtn").style.display = "none";
     }
   </script>
 
@@ -102,12 +105,14 @@
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
       position: relative;
+      text-align: left;
     }
 
     .group-item {
       padding: 10px;
       border-bottom: 1px solid #eee;
       font-size: 1.05em;
+      text-align: center;
     }
 
     .back-button {
@@ -122,6 +127,7 @@
       font-weight: bold;
       font-size: 13px;
       cursor: pointer;
+      display: none;
     }
 
     .back-button:hover {
@@ -130,17 +136,18 @@
 
     #memberList {
       display: none;
-      text-align: left;
     }
 
     #memberItems div {
       padding: 6px 0;
       border-bottom: 1px solid #eee;
+      text-align: center;
     }
 
     .count-display {
-      margin: 20px 0 10px;
+      margin: 10px 0 20px;
       font-size: 1.1em;
+      text-align: center;
     }
   </style>
 </head>
@@ -150,11 +157,11 @@
 
   <div class="container">
 
-    <!-- 뒤로가기 버튼 (숨김, memberList에서만 표시) -->
-    <button class="back-button" onclick="goBack()" style="display: none;" id="backBtn">뒤로가기</button>
+    <!-- 뒤로가기 버튼 (memberList에서만 표시) -->
+    <button class="back-button" onclick="goBack()" id="backBtn">뒤로가기</button>
 
     <!-- 그룹별 리스트 -->
-    <div id="groupList">
+    <div id="groupSection">
       <div class="count-display">현재 참여한 인원 <span id="totalCount">0명</span></div>
       <div id="groupList"></div>
     </div>
@@ -166,30 +173,5 @@
 
   </div>
 
-  <script>
-    // 버튼 표시 위치 전환 처리
-    function showMembers(groupName, members) {
-      const memberList = document.getElementById("memberList");
-      const memberItems = document.getElementById("memberItems");
-      const backBtn = document.getElementById("backBtn");
-
-      memberItems.innerHTML = "";
-      members.forEach((m) => {
-        const div = document.createElement("div");
-        div.textContent = `${m.nickname} / ${m.percent}`;
-        memberItems.appendChild(div);
-      });
-
-      document.getElementById("groupList").style.display = "none";
-      memberList.style.display = "block";
-      backBtn.style.display = "inline-block";
-    }
-
-    function goBack() {
-      document.getElementById("memberList").style.display = "none";
-      document.getElementById("groupList").style.display = "block";
-      document.getElementById("backBtn").style.display = "none";
-    }
-  </script>
 </body>
 </html>
