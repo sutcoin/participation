@@ -31,7 +31,7 @@
 
         if (data) {
           Object.values(data).forEach((item) => {
-            const group = item.group.replace(/\s/g, ""); // remove all whitespace
+            const group = item.group.replace(/\s/g, ""); // remove whitespace
             if (!groups[group]) groups[group] = [];
             groups[group].push({ nickname: item.nickname, percent: item.percent });
           });
@@ -62,8 +62,6 @@
     function showMembers(groupName, members) {
       const memberList = document.getElementById("memberList");
       const memberItems = document.getElementById("memberItems");
-      const backBtn = document.getElementById("backBtn");
-
       memberItems.innerHTML = "";
       members.forEach((m) => {
         const div = document.createElement("div");
@@ -73,7 +71,7 @@
 
       document.getElementById("groupSection").style.display = "none";
       memberList.style.display = "block";
-      backBtn.style.display = "inline-block";
+      document.getElementById("backBtn").style.display = "inline-block";
     }
 
     function goBack() {
@@ -104,8 +102,8 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      position: relative;
       text-align: left;
+      position: relative;
     }
 
     .group-item {
@@ -116,7 +114,7 @@
     }
 
     .back-button {
-      position: absolute;
+      position: fixed;
       top: 20px;
       left: 20px;
       background-color: #4eaefb;
@@ -128,6 +126,7 @@
       font-size: 13px;
       cursor: pointer;
       display: none;
+      z-index: 999;
     }
 
     .back-button:hover {
@@ -155,11 +154,10 @@
 
   <h1>소속별 참여자 현황</h1>
 
+  <!-- 🔵 뒤로가기 버튼: 흰 박스 밖 좌측 상단 -->
+  <button class="back-button" onclick="goBack()" id="backBtn">뒤로가기</button>
+
   <div class="container">
-
-    <!-- 뒤로가기 버튼 (memberList에서만 표시) -->
-    <button class="back-button" onclick="goBack()" id="backBtn">뒤로가기</button>
-
     <!-- 그룹별 리스트 -->
     <div id="groupSection">
       <div class="count-display">현재 참여한 인원 <span id="totalCount">0명</span></div>
@@ -170,7 +168,6 @@
     <div id="memberList">
       <div id="memberItems"></div>
     </div>
-
   </div>
 
 </body>
