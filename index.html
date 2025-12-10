@@ -1,135 +1,120 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>주정산금 자발적 재참여</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- SUIT 폰트 적용 -->
-  <link href="https://cdn.jsdelivr.net/npm/suitcss@2.0.0/font/SUIT.css" rel="stylesheet">
-
+  <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; }
     body {
-      margin: 0;
       font-family: 'SUIT', sans-serif;
-      background-color: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
+      margin: 0;
+      padding: 30px 20px;
+      background: #f2f2f2;
     }
     h1 {
       text-align: center;
-      color: #333;
-      margin-bottom: 20px;
+      font-size: 24px;
     }
     .form-container {
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-      width: 100%;
       max-width: 400px;
-      display: flex;
-      flex-direction: column;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
     label {
+      margin-top: 10px;
+      font-weight: 600;
       display: block;
-      font-weight: bold;
-      margin-top: 15px;
-      margin-bottom: 5px;
-      color: #222;
     }
     input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 5px;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 1em;
     }
     button {
       width: 100%;
       padding: 12px;
-      font-size: 1em;
-      font-weight: bold;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
-      margin-top: 15px;
-    }
-    .btn-submit { background-color: #28a745; color: white; }
-    .btn-submit:hover { background-color: #218838; }
-    .btn-view { background-color: #007bff; color: white; }
-    .btn-view:hover { background-color: #0069d9; }
-    .btn-admin {
-      background-color: #555;
-      color: white;
-    }
-    .btn-admin:hover {
-      background-color: #333;
-    }
-    .credit-screen {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      color: yellow;
-      font-family: 'SUIT', sans-serif;
-      font-size: 1.5em;
-      overflow: hidden;
-      z-index: 999;
-    }
-    .btn-back {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: transparent;
-      color: yellow;
-      border: none;
-      font-size: 2em;
       font-weight: bold;
       cursor: pointer;
+      margin-top: 5px;
     }
-    .scrolling-text {
+    .btn-submit { background: #28a745; color: white; }
+    .btn-view { background: #007bff; color: white; }
+    .btn-admin { background: #555; color: white; }
+
+    .group-list, .member-list {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .group-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .group-item:hover {
+      background: #f9f9f9;
+    }
+    .back-btn {
       position: absolute;
-      bottom: -100%;
-      width: 100%;
-      text-align: center;
-      white-space: pre-line;
-      animation: scrollLoop 30s linear infinite;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
-    @keyframes scrollLoop {
-      0% { transform: translateY(100%); }
-      100% { transform: translateY(-200%); }
+    .back-btn img {
+      width: 40px;
+      height: 40px;
     }
   </style>
 </head>
 <body>
 
-  <h1 id="pageTitle">주정산금 자발적 재참여</h1>
+  <h1>주정산금 자발적 재참여</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
-    <input type="text" id="nickname" placeholder="예: 홍길동">
+    <input type="text" id="nickname" placeholder="예: 홍길동" />
     <label for="group">소속</label>
-    <input type="text" id="group" placeholder="예: 한국">
+    <input type="text" id="group" placeholder="예: 한국" />
     <label for="percent">퍼센트</label>
-    <input type="text" id="percent" placeholder="예: 50~100%">
+    <input type="text" id="percent" placeholder="예: 50~100%" />
     <button class="btn-submit" onclick="submitForm()">신청하기</button>
-    <button class="btn-view" onclick="showCredits()">재참여 명단 보기</button>
+    <button class="btn-view" onclick="showGroups()">재참여 명단 보기</button>
+    <button class="btn-admin" onclick="openAdmin()">👤 관리자 모드</button>
   </div>
 
-  <div class="credit-screen" id="creditScreen">
-    <button class="btn-back" onclick="goBack()">←</button>
-    <div class="scrolling-text" id="creditText"></div>
+  <div class="group-list" id="groupList" style="display:none;">
+    <button class="back-btn" onclick="goBack()">
+      <img src="https://gptonline.ai/files/back-arrow.png" alt="뒤로가기" />
+    </button>
+    <h2>소속별 참여 현황</h2>
+    <div id="groupItems"></div>
+  </div>
+
+  <div class="member-list" id="memberList" style="display:none;">
+    <button class="back-btn" onclick="showGroups()">
+      <img src="https://gptonline.ai/files/back-arrow.png" alt="뒤로가기" />
+    </button>
+    <h2 id="memberTitle"></h2>
+    <div id="memberItems"></div>
   </div>
 
   <script>
-    let submissions = [];
+    let submissions = {};
 
     window.onload = () => {
       const saved = localStorage.getItem("submissions");
@@ -138,52 +123,67 @@
       }
     };
 
-    function saveSubmissions() {
-      localStorage.setItem("submissions", JSON.stringify(submissions));
+    function normalizeGroup(group) {
+      return group.replace(/\\s+/g, "");
     }
 
     function submitForm() {
-      const nickname = document.getElementById('nickname').value.trim();
-      const group = document.getElementById('group').value.trim();
-      const percent = document.getElementById('percent').value.trim();
-
+      const nickname = document.getElementById("nickname").value.trim();
+      const group = normalizeGroup(document.getElementById("group").value.trim());
+      const percent = document.getElementById("percent").value.trim();
       if (!nickname || !group || !percent) {
-        alert('모든 항목을 입력해주세요.');
+        alert("모든 항목을 입력해주세요.");
         return;
       }
-
-      submissions.push({ nickname, group, percent });
-      saveSubmissions(); 
-      alert('신청 감사합니다.');
-
-      document.getElementById('nickname').value = '';
-      document.getElementById('group').value = '';
-      document.getElementById('percent').value = '';
+      if (!submissions[group]) {
+        submissions[group] = [];
+      }
+      submissions[group].push({ nickname, percent });
+      localStorage.setItem("submissions", JSON.stringify(submissions));
+      alert("신청 감사합니다.");
+      document.getElementById("nickname").value = "";
+      document.getElementById("group").value = "";
+      document.getElementById("percent").value = "";
     }
 
-    function showCredits() {
-      if (submissions.length === 0) {
-        alert('명단이 비어있습니다. 먼저 신청해주세요!');
-        return;
-      }
+    function showGroups() {
+      document.getElementById("formContainer").style.display = "none";
+      document.getElementById("groupList").style.display = "block";
+      document.getElementById("memberList").style.display = "none";
 
-      let creditHTML = '=== 재참여 명단 ===<br><br>';
-      submissions.forEach((item, index) => {
-        creditHTML += `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}<br>`;
+      const groupItems = document.getElementById("groupItems");
+      groupItems.innerHTML = "";
+      const sorted = Object.entries(submissions).sort((a, b) => b[1].length - a[1].length);
+      sorted.forEach(([group, members]) => {
+        const div = document.createElement("div");
+        div.className = "group-item";
+        div.innerText = group + " / " + members.length;
+        div.onclick = () => showMembers(group);
+        groupItems.appendChild(div);
       });
+    }
 
-      const creditText = document.getElementById('creditText');
-      creditText.innerHTML = creditHTML + "<br><br>" + creditHTML;
+    function showMembers(group) {
+      document.getElementById("groupList").style.display = "none";
+      document.getElementById("memberList").style.display = "block";
+      document.getElementById("memberTitle").innerText = `${group} 참여자 명단`;
 
-      document.getElementById('formContainer').style.display = 'none';
-      document.getElementById('pageTitle').style.display = 'none';
-      document.getElementById('creditScreen').style.display = 'block';
+      const memberItems = document.getElementById("memberItems");
+      memberItems.innerHTML = "";
+      submissions[group].forEach((user, i) => {
+        const div = document.createElement("div");
+        div.innerText = `${i + 1}. ${user.nickname} / ${user.percent}`;
+        memberItems.appendChild(div);
+      });
     }
 
     function goBack() {
-      document.getElementById('creditScreen').style.display = 'none';
-      document.getElementById('formContainer').style.display = 'flex';
-      document.getElementById('pageTitle').style.display = 'block';
+      document.getElementById("groupList").style.display = "none";
+      document.getElementById("formContainer").style.display = "block";
+    }
+
+    function openAdmin() {
+      alert("관리자 모드는 추후 추가될 예정입니다.");
     }
   </script>
 </body>
