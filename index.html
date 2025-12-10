@@ -73,22 +73,22 @@
     }
 
     .back-btn {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background-color: #87cefa;
-      color: #000;
-      border: 1px solid #0077cc;
+      display: inline-block;
+      background-color: #5cb6f9;
+      color: #fff;
+      border: none;
       border-radius: 5px;
-      padding: 5px 12px;
+      padding: 6px 14px;
       font-size: 13px;
-      cursor: pointer;
       font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      cursor: pointer;
     }
 
     .total-count {
       text-align: center;
-      margin-top: 30px;
+      margin-bottom: 15px;
       font-size: 16px;
       font-weight: 500;
     }
@@ -117,6 +117,7 @@
   </div>
 
   <div class="group-list" id="groupList" style="display:none;">
+    <h1>소속별 참여자 현황</h1>
     <button class="back-btn" onclick="goBack()">뒤로가기</button>
     <div class="total-count">
       현재 참여한 인원 <span class="highlight-number" id="totalCount">0</span>명
@@ -125,8 +126,8 @@
   </div>
 
   <div class="member-list" id="memberList" style="display:none;">
+    <h1 id="memberTitle" style="text-align:center;"></h1>
     <button class="back-btn" onclick="showGroups()">뒤로가기</button>
-    <h2 id="memberTitle" style="text-align:center;"></h2>
     <div id="memberItems"></div>
   </div>
 
@@ -187,7 +188,6 @@
       document.getElementById("formContainer").style.display = "none";
       document.getElementById("groupList").style.display = "block";
       document.getElementById("memberList").style.display = "none";
-      document.getElementById("mainTitle").innerText = "소속별 참여자 현황";
 
       const groupMap = {};
       submissions.forEach(entry => {
@@ -216,7 +216,7 @@
     function showMembers(groupName, list) {
       document.getElementById("groupList").style.display = "none";
       document.getElementById("memberList").style.display = "block";
-      document.getElementById("mainTitle").innerText = groupName + " 참여자 명단";
+      document.getElementById("memberTitle").innerText = groupName + " 참여자 명단";
       const memberItems = document.getElementById("memberItems");
       memberItems.innerHTML = "";
       list.forEach((item, i) => {
