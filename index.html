@@ -2,13 +2,120 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>주정산금 자발적 재참여</title>
-  <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>소속별 참여자 현황</title>
+  <link href="https://cdn.jsdelivr.net/npm/suitcss-base@6.1.0/index.css" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'SUIT', sans-serif;
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 30px 10px;
+      background-color: #f0f0f0;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 15px;
+    }
+    .container {
+      background: white;
+      padding: 30px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .btn {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    .btn-back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #42A5F5;
+      color: white;
+      padding: 6px 10px;
+    }
+    .highlight {
+      font-weight: bold;
+      color: red;
+      font-size: 1.2em;
+    }
+    .group-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+    .nickname-list {
+      margin-top: 10px;
+      text-align: left;
+      padding-left: 10px;
+    }
+    .nickname-list p {
+      margin: 4px 0;
+    }
+    #formContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .btn-submit, .btn-view, .btn-admin {
+      width: 100%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
 
+  <div id="formContainer">
+    <h1>주정산금 자발적 재참여</h1>
+    <div class="container">
+      <input type="text" id="nickname" placeholder="닉네임">
+      <input type="text" id="group" placeholder="소속 (예: 대전서구)">
+      <input type="text" id="percent" placeholder="퍼센트 (예: 50)">
+      <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
+      <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
+      <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
+    </div>
+  </div>
+
+  <div id="creditContainer" style="display: none;">
+    <h1>소속별 참여자 현황</h1>
+    <button class="btn btn-back" onclick="goBack()">뒤로가기</button>
+    <div class="container">
+      <p>현재 참여한 인원 <span class="highlight" id="totalCount">0</span>명</p>
+      <div id="groupList"></div>
+    </div>
+  </div>
+
+  <div id="adminPanel" style="display: none;" class="container">
+    <h2>관리자 패널</h2>
+    <div id="adminList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
@@ -23,208 +130,107 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const submissionsRef = ref(db, "submissions");
+    const refSubmissions = ref(db, 'submissions');
 
-    let allData = [];
+    function normalizeGroup(name) {
+      return name.replace(/\s/g, '').trim();
+    }
 
-    window.onload = () => {
-      onValue(submissionsRef, (snapshot) => {
-        const data = snapshot.val();
-        allData = data ? Object.values(data) : [];
-      });
-    };
-
-    window.submitForm = () => {
+    async function submitForm() {
       const nickname = document.getElementById('nickname').value.trim();
-      const group = document.getElementById('group').value.trim().replace(/\s/g, '');
+      const group = normalizeGroup(document.getElementById('group').value);
       const percent = document.getElementById('percent').value.trim();
 
       if (!nickname || !group || !percent) {
-        alert('모든 항목을 입력해주세요.');
+        alert("모든 정보를 입력해주세요.");
         return;
       }
 
-      const newSubmission = { nickname, group, percent };
-      push(submissionsRef, newSubmission);
+      await push(refSubmissions, { nickname, group, percent, timestamp: Date.now() });
+      alert("신청이 완료되었습니다!");
 
-      alert('신청이 완료되었습니다!');
-      document.getElementById('nickname').value = '';
-      document.getElementById('group').value = '';
-      document.getElementById('percent').value = '';
-    };
+      document.getElementById('nickname').value = "";
+      document.getElementById('group').value = "";
+      document.getElementById('percent').value = "";
+    }
 
-    window.showGroups = () => {
+    async function showCredits() {
+      document.getElementById("formContainer").style.display = "none";
+      document.getElementById("creditContainer").style.display = "block";
+      const snapshot = await get(refSubmissions);
+      const data = snapshot.val();
+
+      if (!data) {
+        document.getElementById('groupList').innerHTML = "<p>참여자가 없습니다.</p>";
+        return;
+      }
+
       const groupMap = {};
-
-      allData.forEach(entry => {
-        const group = entry.group.replace(/\s/g, '');
-        if (!groupMap[group]) groupMap[group] = [];
-        groupMap[group].push({ nickname: entry.nickname, percent: entry.percent });
-      });
+      for (const key in data) {
+        const entry = data[key];
+        const groupKey = normalizeGroup(entry.group);
+        if (!groupMap[groupKey]) groupMap[groupKey] = [];
+        groupMap[groupKey].push(entry);
+      }
 
       const sortedGroups = Object.entries(groupMap).sort((a, b) => b[1].length - a[1].length);
-      const groupList = document.getElementById("groupList");
-      groupList.innerHTML = "";
+      const groupListEl = document.getElementById('groupList');
+      groupListEl.innerHTML = '';
+      let total = 0;
 
-      let totalCount = 0;
-
-      sortedGroups.forEach(([group, members]) => {
-        totalCount += members.length;
-        const div = document.createElement("div");
-        div.className = "group-item";
-        div.textContent = `${group} / ${members.length}`;
-        div.onclick = () => showMembers(group, members);
-        groupList.appendChild(div);
+      sortedGroups.forEach(([group, entries]) => {
+        total += entries.length;
+        const div = document.createElement('div');
+        div.className = 'group-item';
+        div.innerHTML = `<strong>${group} / ${entries.length}</strong>`;
+        div.onclick = () => {
+          const details = entries.map(e => `<p>${e.nickname} / ${e.percent}%</p>`).join('');
+          div.innerHTML += `<div class="nickname-list">${details}</div>`;
+          div.onclick = null;
+        };
+        groupListEl.appendChild(div);
       });
 
-      document.getElementById("formSection").style.display = "none";
-      document.getElementById("groupSection").style.display = "block";
-      document.getElementById("totalCount").innerHTML = `<span style="color:red;font-size:1.2em;">${totalCount}</span>명`;
-      document.getElementById("backBtn").style.display = "inline-block";
-    };
+      document.getElementById('totalCount').textContent = total;
+    }
 
-    window.showMembers = (group, members) => {
-      const memberItems = document.getElementById("memberItems");
-      memberItems.innerHTML = "";
-      members.forEach((m) => {
-        const div = document.createElement("div");
-        div.textContent = `${m.nickname} / ${m.percent}`;
-        memberItems.appendChild(div);
+    function goBack() {
+      document.getElementById("formContainer").style.display = "flex";
+      document.getElementById("creditContainer").style.display = "none";
+    }
+
+    function openAdminPanel() {
+      const pw = prompt("관리자 비밀번호를 입력하세요:");
+      if (pw !== "admin123") {
+        alert("비밀번호가 틀렸습니다.");
+        return;
+      }
+
+      get(refSubmissions).then(snapshot => {
+        const data = snapshot.val();
+        const list = document.getElementById("adminList");
+        list.innerHTML = "";
+
+        if (!data) {
+          list.innerHTML = "<p>신청된 데이터가 없습니다.</p>";
+          return;
+        }
+
+        Object.entries(data).forEach(([id, item]) => {
+          const div = document.createElement("div");
+          div.innerHTML = `${item.nickname} - ${item.group} - ${item.percent}% <button onclick="deleteItem('${id}')">삭제</button>`;
+          list.appendChild(div);
+        });
+
+        document.getElementById("adminPanel").style.display = "block";
       });
-      document.getElementById("groupSection").style.display = "none";
-      document.getElementById("memberList").style.display = "block";
-    };
+    }
 
-    window.goBack = () => {
-      document.getElementById("formSection").style.display = "block";
-      document.getElementById("groupSection").style.display = "none";
-      document.getElementById("memberList").style.display = "none";
-      document.getElementById("backBtn").style.display = "none";
-    };
+    function deleteItem(id) {
+      const dbRef = ref(db, `submissions/${id}`);
+      dbRef.remove();
+      alert("삭제되었습니다. 새로고침 해주세요.");
+    }
   </script>
-
-  <style>
-    body {
-      font-family: 'SUIT', sans-serif;
-      background-color: #f1f1f1;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 30px;
-      font-size: 1.8em;
-    }
-
-    .container {
-      background: white;
-      max-width: 600px;
-      margin: 30px auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 15px;
-    }
-
-    .btn-submit { background-color: #28a745; color: white; }
-    .btn-submit:hover { background-color: #218838; }
-    .btn-view { background-color: #007bff; color: white; }
-    .btn-view:hover { background-color: #0069d9; }
-
-    .back-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: #4eaefb;
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 13px;
-      cursor: pointer;
-      display: none;
-      z-index: 999;
-    }
-
-    .group-item {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 1.05em;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    #memberList {
-      display: none;
-    }
-
-    #memberItems div {
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
-      text-align: center;
-    }
-
-    .count-display {
-      margin: 10px 0 20px;
-      font-size: 1.1em;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>주정산금 자발적 재참여</h1>
-
-  <button class="back-button" onclick="goBack()" id="backBtn">뒤로가기</button>
-
-  <div class="container" id="formSection">
-    <label for="nickname">닉네임</label>
-    <input type="text" id="nickname" placeholder="예: 홍길동">
-    <label for="group">소속</label>
-    <input type="text" id="group" placeholder="예: 대전 서구">
-    <label for="percent">퍼센트</label>
-    <input type="text" id="percent" placeholder="예: 50~100%">
-    <button class="btn-submit" onclick="submitForm()">신청하기</button>
-    <button class="btn-view" onclick="showGroups()">재참여 명단 보기</button>
-  </div>
-
-  <div class="container" id="groupSection" style="display: none;">
-    <div class="count-display">현재 참여한 인원 <span id="totalCount">0명</span></div>
-    <div id="groupList"></div>
-  </div>
-
-  <div class="container" id="memberList" style="display: none;">
-    <div id="memberItems"></div>
-  </div>
-
 </body>
 </html>
