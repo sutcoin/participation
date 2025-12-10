@@ -17,6 +17,7 @@
     h1 {
       text-align: center;
       font-size: 24px;
+      margin-bottom: 20px;
     }
     .form-container {
       max-width: 400px;
@@ -57,7 +58,7 @@
       margin: 20px auto;
       background: white;
       border-radius: 8px;
-      padding: 15px;
+      padding: 15px 15px 20px 15px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
       position: relative;
     }
@@ -73,20 +74,21 @@
 
     .back-btn {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: transparent;
+      top: 15px;
+      left: 15px;
+      background-color: #87cefa;
       color: #000;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 5px 10px;
-      font-size: 12px;
+      border: 1px solid #0077cc;
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 13px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .total-count {
       text-align: center;
-      margin-top: 10px;
+      margin-top: 30px;
       font-size: 16px;
       font-weight: 500;
     }
@@ -100,7 +102,7 @@
 </head>
 <body>
 
-  <h1>주정산금 자발적 재참여</h1>
+  <h1 id="mainTitle">주정산금 자발적 재참여</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
@@ -116,7 +118,6 @@
 
   <div class="group-list" id="groupList" style="display:none;">
     <button class="back-btn" onclick="goBack()">뒤로가기</button>
-    <h2>소속별 참여 현황</h2>
     <div class="total-count">
       현재 참여한 인원 <span class="highlight-number" id="totalCount">0</span>명
     </div>
@@ -125,7 +126,7 @@
 
   <div class="member-list" id="memberList" style="display:none;">
     <button class="back-btn" onclick="showGroups()">뒤로가기</button>
-    <h2 id="memberTitle"></h2>
+    <h2 id="memberTitle" style="text-align:center;"></h2>
     <div id="memberItems"></div>
   </div>
 
@@ -145,7 +146,6 @@
     const db = firebase.database();
     let submissions = [];
 
-    // 데이터 불러오기 (지속 반영)
     const loadData = () => {
       db.ref("submissions").once("value", snapshot => {
         const data = snapshot.val();
@@ -156,7 +156,7 @@
     window.onload = loadData;
 
     function normalizeGroupName(name) {
-      return name.replace(/\s+/g, ""); // 공백 제거
+      return name.replace(/\s+/g, "");
     }
 
     function submitForm() {
@@ -179,7 +179,7 @@
         document.getElementById("nickname").value = "";
         document.getElementById("group").value = "";
         document.getElementById("percent").value = "";
-        loadData(); // 재로딩
+        loadData();
       });
     }
 
@@ -187,6 +187,7 @@
       document.getElementById("formContainer").style.display = "none";
       document.getElementById("groupList").style.display = "block";
       document.getElementById("memberList").style.display = "none";
+      document.getElementById("mainTitle").innerText = "소속별 참여자 현황";
 
       const groupMap = {};
       submissions.forEach(entry => {
@@ -215,8 +216,7 @@
     function showMembers(groupName, list) {
       document.getElementById("groupList").style.display = "none";
       document.getElementById("memberList").style.display = "block";
-      document.getElementById("memberTitle").innerText = `${groupName} 참여자 명단`;
-
+      document.getElementById("mainTitle").innerText = groupName + " 참여자 명단";
       const memberItems = document.getElementById("memberItems");
       memberItems.innerHTML = "";
       list.forEach((item, i) => {
@@ -228,13 +228,15 @@
 
     function goBack() {
       document.getElementById("groupList").style.display = "none";
-      document.getElementById("formContainer").style.display = "block";
       document.getElementById("memberList").style.display = "none";
+      document.getElementById("formContainer").style.display = "block";
+      document.getElementById("mainTitle").innerText = "주정산금 자발적 재참여";
     }
 
     function openAdmin() {
       alert("관리자 모드는 추후 추가될 예정입니다.");
     }
   </script>
+
 </body>
 </html>
