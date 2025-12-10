@@ -2,143 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>소속별 참여자 현황</title>
   <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <style>
-    body {
-      font-family: 'SUIT', sans-serif;
-      margin: 0;
-      padding: 30px 20px;
-      background: #f2f2f2;
-    }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    h1 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    .form-container {
-      max-width: 400px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
-
-    label {
-      margin-top: 10px;
-      font-weight: 600;
-      display: block;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 5px;
-    }
-
-    .btn-submit { background: #28a745; color: white; }
-    .btn-view { background: #007bff; color: white; }
-    .btn-admin { background: #555; color: white; }
-
-    .group-list, .member-list {
-      max-width: 500px;
-      margin: 20px auto;
-      background: white;
-      border-radius: 8px;
-      padding: 15px 15px 20px 15px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      position: relative;
-    }
-
-    .group-item {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-
-    .group-item:hover {
-      background: #f9f9f9;
-    }
-
-    .back-btn {
-      background-color: #5cb6f9;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 12px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      position: absolute;
-      top: 15px;
-      left: 15px;
-    }
-
-    .total-count {
-      text-align: center;
-      margin-top: 40px;
-      margin-bottom: 15px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .highlight-number {
-      color: red;
-      font-size: 20px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-
-  <h1 id="mainTitle">소속별 참여자 현황</h1>
-
-  <div class="form-container" id="formContainer">
-    <label for="nickname">닉네임</label>
-    <input type="text" id="nickname" placeholder="예: 홍길동" />
-    <label for="group">소속</label>
-    <input type="text" id="group" placeholder="예: 한국" />
-    <label for="percent">퍼센트</label>
-    <input type="text" id="percent" placeholder="예: 50~100%" />
-    <button class="btn-submit" onclick="submitForm()">신청하기</button>
-    <button class="btn-view" onclick="showGroups()">재참여 명단 보기</button>
-    <button class="btn-admin" onclick="openAdmin()">👤 관리자 모드</button>
-  </div>
-
-  <div class="group-list" id="groupList" style="display:none;">
-    <button class="back-btn" onclick="goBack()">뒤로가기</button>
-    <div class="total-count">
-      현재 참여한 인원 <span class="highlight-number" id="totalCount">0</span>명
-    </div>
-    <div id="groupItems"></div>
-  </div>
-
-  <div class="member-list" id="memberList" style="display:none;">
-    <h1 id="memberTitle" style="text-align:center;"></h1>
-    <button class="back-btn" onclick="showGroups()">뒤로가기</button>
-    <div id="memberItems"></div>
-  </div>
-
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
       authDomain: "participation-4f85e.firebaseapp.com",
@@ -150,100 +20,176 @@
       measurementId: "G-6T8L975CVQ"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let submissions = [];
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const submissionsRef = ref(db, "submissions");
 
-    const loadData = () => {
-      db.ref("submissions").once("value", snapshot => {
+    window.onload = () => {
+      onValue(submissionsRef, (snapshot) => {
         const data = snapshot.val();
-        submissions = data ? Object.values(data) : [];
+        const groups = {};
+
+        if (data) {
+          Object.values(data).forEach((item) => {
+            const group = item.group.replace(/\s/g, ""); // remove all whitespace
+            if (!groups[group]) groups[group] = [];
+            groups[group].push({ nickname: item.nickname, percent: item.percent });
+          });
+
+          // Sort groups by number of participants
+          const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+
+          const groupList = document.getElementById("groupList");
+          groupList.innerHTML = "";
+
+          let totalCount = 0;
+
+          sortedGroups.forEach(([groupName, members]) => {
+            totalCount += members.length;
+            const groupDiv = document.createElement("div");
+            groupDiv.innerHTML = `<strong>${groupName}</strong> / ${members.length}`;
+            groupDiv.className = "group-item";
+            groupDiv.style.cursor = "pointer";
+            groupDiv.onclick = () => showMembers(groupName, members);
+            groupList.appendChild(groupDiv);
+          });
+
+          document.getElementById("totalCount").innerHTML = `<span style="color: red; font-size: 1.2em;">${totalCount}</span>명`;
+        }
       });
     };
 
-    window.onload = loadData;
-
-    function normalizeGroupName(name) {
-      return name.replace(/\s+/g, "");
-    }
-
-    function submitForm() {
-      const nickname = document.getElementById("nickname").value.trim();
-      const group = document.getElementById("group").value.trim();
-      const percent = document.getElementById("percent").value.trim();
-      if (!nickname || !group || !percent) {
-        alert("모든 항목을 입력해주세요.");
-        return;
-      }
-      const newEntry = {
-        nickname,
-        group,
-        normalizedGroup: normalizeGroupName(group),
-        percent
-      };
-      const newRef = db.ref("submissions").push();
-      newRef.set(newEntry, () => {
-        alert("신청 감사합니다.");
-        document.getElementById("nickname").value = "";
-        document.getElementById("group").value = "";
-        document.getElementById("percent").value = "";
-        loadData();
-      });
-    }
-
-    function showGroups() {
-      document.getElementById("formContainer").style.display = "none";
+    window.goBack = () => {
       document.getElementById("groupList").style.display = "block";
       document.getElementById("memberList").style.display = "none";
+    };
 
-      const groupMap = {};
-      submissions.forEach(entry => {
-        const key = entry.normalizedGroup;
-        if (!groupMap[key]) {
-          groupMap[key] = { displayName: entry.group, list: [] };
-        }
-        groupMap[key].list.push(entry);
-      });
-
-      const groupItems = document.getElementById("groupItems");
-      groupItems.innerHTML = "";
-
-      const sorted = Object.entries(groupMap).sort((a, b) => b[1].list.length - a[1].list.length);
-      sorted.forEach(([key, groupData]) => {
-        const div = document.createElement("div");
-        div.className = "group-item";
-        div.innerText = `${groupData.displayName} / ${groupData.list.length}`;
-        div.onclick = () => showMembers(groupData.displayName, groupData.list);
-        groupItems.appendChild(div);
-      });
-
-      document.getElementById("totalCount").innerText = submissions.length;
-    }
-
-    function showMembers(groupName, list) {
-      document.getElementById("groupList").style.display = "none";
-      document.getElementById("memberList").style.display = "block";
-      document.getElementById("memberTitle").innerText = groupName + " 참여자 명단";
+    function showMembers(groupName, members) {
+      const memberList = document.getElementById("memberList");
       const memberItems = document.getElementById("memberItems");
       memberItems.innerHTML = "";
-      list.forEach((item, i) => {
-        const div = document.createElement("div");
-        div.innerText = `${i + 1}. ${item.nickname} / ${item.percent}`;
-        memberItems.appendChild(div);
+
+      members.forEach((m) => {
+        const item = document.createElement("div");
+        item.textContent = `${m.nickname} / ${m.percent}`;
+        memberItems.appendChild(item);
       });
-    }
 
-    function goBack() {
       document.getElementById("groupList").style.display = "none";
-      document.getElementById("memberList").style.display = "none";
-      document.getElementById("formContainer").style.display = "block";
-      document.getElementById("mainTitle").innerText = "소속별 참여자 현황";
-    }
-
-    function openAdmin() {
-      alert("관리자 모드는 추후 추가될 예정입니다.");
+      memberList.style.display = "block";
     }
   </script>
 
+  <style>
+    body {
+      font-family: 'SUIT', sans-serif;
+      background-color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 30px;
+      font-size: 1.8em;
+    }
+
+    .container {
+      background: white;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .group-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 1.05em;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #4eaefb;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background-color: #319be6;
+    }
+
+    #memberList {
+      display: none;
+      text-align: left;
+    }
+
+    #memberItems div {
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .count-display {
+      margin: 20px 0 10px;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>소속별 참여자 현황</h1>
+
+  <div class="container">
+
+    <!-- 뒤로가기 버튼 (숨김, memberList에서만 표시) -->
+    <button class="back-button" onclick="goBack()" style="display: none;" id="backBtn">뒤로가기</button>
+
+    <!-- 그룹별 리스트 -->
+    <div id="groupList">
+      <div class="count-display">현재 참여한 인원 <span id="totalCount">0명</span></div>
+      <div id="groupList"></div>
+    </div>
+
+    <!-- 멤버 상세보기 -->
+    <div id="memberList">
+      <div id="memberItems"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // 버튼 표시 위치 전환 처리
+    function showMembers(groupName, members) {
+      const memberList = document.getElementById("memberList");
+      const memberItems = document.getElementById("memberItems");
+      const backBtn = document.getElementById("backBtn");
+
+      memberItems.innerHTML = "";
+      members.forEach((m) => {
+        const div = document.createElement("div");
+        div.textContent = `${m.nickname} / ${m.percent}`;
+        memberItems.appendChild(div);
+      });
+
+      document.getElementById("groupList").style.display = "none";
+      memberList.style.display = "block";
+      backBtn.style.display = "inline-block";
+    }
+
+    function goBack() {
+      document.getElementById("memberList").style.display = "none";
+      document.getElementById("groupList").style.display = "block";
+      document.getElementById("backBtn").style.display = "none";
+    }
+  </script>
 </body>
 </html>
