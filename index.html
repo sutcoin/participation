@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>소속별 참여자 현황</title>
-  <link href="https://cdn.jsdelivr.net/npm/suitcss-base@6.1.0/index.css" rel="stylesheet">
+  <title>주정산금 자발적 재참여</title>
+  <link href="https://cdn.jsdelivr.net/npm/suitcss-base@6.1.0/index.css" rel="stylesheet" />
   <style>
     * {
       font-family: 'SUIT', sans-serif;
@@ -31,20 +31,25 @@
     }
     .btn {
       display: inline-block;
-      padding: 6px 12px;
+      padding: 10px;
+      margin-top: 10px;
       border-radius: 6px;
       border: none;
       font-weight: bold;
-      font-size: 0.9em;
+      font-size: 1em;
       cursor: pointer;
     }
-    .btn-back {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #42A5F5;
-      color: white;
-      padding: 6px 10px;
+    .btn-submit { background-color: #28a745; color: white; }
+    .btn-view { background-color: #007bff; color: white; }
+    .btn-admin { background-color: #6c757d; color: white; }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     .highlight {
       font-weight: bold;
@@ -65,22 +70,16 @@
     .nickname-list p {
       margin: 4px 0;
     }
-    #formContainer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 1em;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .btn-submit, .btn-view, .btn-admin {
-      width: 100%;
-      margin-top: 10px;
+    .btn-back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #42A5F5;
+      color: white;
+      padding: 6px 10px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 5px;
     }
   </style>
 </head>
@@ -89,9 +88,9 @@
   <div id="formContainer">
     <h1>주정산금 자발적 재참여</h1>
     <div class="container">
-      <input type="text" id="nickname" placeholder="닉네임">
-      <input type="text" id="group" placeholder="소속 (예: 대전서구)">
-      <input type="text" id="percent" placeholder="퍼센트 (예: 50)">
+      <input type="text" id="nickname" placeholder="닉네임" />
+      <input type="text" id="group" placeholder="소속 (예: 대전서구)" />
+      <input type="text" id="percent" placeholder="퍼센트 (예: 50)" />
       <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
       <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
       <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
@@ -100,7 +99,7 @@
 
   <div id="creditContainer" style="display: none;">
     <h1>소속별 참여자 현황</h1>
-    <button class="btn btn-back" onclick="goBack()">뒤로가기</button>
+    <button class="btn-back" onclick="goBack()">뒤로가기</button>
     <div class="container">
       <p>현재 참여한 인원 <span class="highlight" id="totalCount">0</span>명</p>
       <div id="groupList"></div>
@@ -112,11 +111,10 @@
     <div id="adminList"></div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
+  <!-- Firebase SDK (v8 방식 사용: 작동 보장) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
       authDomain: "participation-4f85e.firebaseapp.com",
@@ -127,76 +125,77 @@
       appId: "1:694493909568:web:1ebf7b9394e2ddce3d05a5",
       measurementId: "G-6T8L975CVQ"
     };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const refSubmissions = ref(db, 'submissions');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     function normalizeGroup(name) {
       return name.replace(/\s/g, '').trim();
     }
 
-    async function submitForm() {
-      const nickname = document.getElementById('nickname').value.trim();
-      const group = normalizeGroup(document.getElementById('group').value);
-      const percent = document.getElementById('percent').value.trim();
+    function submitForm() {
+      const nickname = document.getElementById("nickname").value.trim();
+      const group = normalizeGroup(document.getElementById("group").value);
+      const percent = document.getElementById("percent").value.trim();
 
       if (!nickname || !group || !percent) {
         alert("모든 정보를 입력해주세요.");
         return;
       }
 
-      await push(refSubmissions, { nickname, group, percent, timestamp: Date.now() });
+      const data = { nickname, group, percent, timestamp: Date.now() };
+      db.ref("submissions").push(data);
       alert("신청이 완료되었습니다!");
 
-      document.getElementById('nickname').value = "";
-      document.getElementById('group').value = "";
-      document.getElementById('percent').value = "";
+      document.getElementById("nickname").value = "";
+      document.getElementById("group").value = "";
+      document.getElementById("percent").value = "";
     }
 
-    async function showCredits() {
+    function showCredits() {
       document.getElementById("formContainer").style.display = "none";
       document.getElementById("creditContainer").style.display = "block";
-      const snapshot = await get(refSubmissions);
-      const data = snapshot.val();
 
-      if (!data) {
-        document.getElementById('groupList').innerHTML = "<p>참여자가 없습니다.</p>";
-        return;
-      }
+      db.ref("submissions").once("value", (snapshot) => {
+        const data = snapshot.val();
+        const groupList = document.getElementById("groupList");
+        groupList.innerHTML = "";
+        let total = 0;
 
-      const groupMap = {};
-      for (const key in data) {
-        const entry = data[key];
-        const groupKey = normalizeGroup(entry.group);
-        if (!groupMap[groupKey]) groupMap[groupKey] = [];
-        groupMap[groupKey].push(entry);
-      }
+        if (!data) {
+          groupList.innerHTML = "<p>참여자가 없습니다.</p>";
+          return;
+        }
 
-      const sortedGroups = Object.entries(groupMap).sort((a, b) => b[1].length - a[1].length);
-      const groupListEl = document.getElementById('groupList');
-      groupListEl.innerHTML = '';
-      let total = 0;
+        const groupMap = {};
+        for (const id in data) {
+          const entry = data[id];
+          const groupKey = normalizeGroup(entry.group);
+          if (!groupMap[groupKey]) groupMap[groupKey] = [];
+          groupMap[groupKey].push(entry);
+        }
 
-      sortedGroups.forEach(([group, entries]) => {
-        total += entries.length;
-        const div = document.createElement('div');
-        div.className = 'group-item';
-        div.innerHTML = `<strong>${group} / ${entries.length}</strong>`;
-        div.onclick = () => {
-          const details = entries.map(e => `<p>${e.nickname} / ${e.percent}%</p>`).join('');
-          div.innerHTML += `<div class="nickname-list">${details}</div>`;
-          div.onclick = null;
-        };
-        groupListEl.appendChild(div);
+        const sortedGroups = Object.entries(groupMap).sort((a, b) => b[1].length - a[1].length);
+        sortedGroups.forEach(([group, entries]) => {
+          total += entries.length;
+          const div = document.createElement("div");
+          div.className = "group-item";
+          div.innerHTML = `<strong>${group} / ${entries.length}</strong>`;
+          div.onclick = () => {
+            div.innerHTML += `<div class="nickname-list">${entries
+              .map((e) => `<p>${e.nickname} / ${e.percent}%</p>`)
+              .join("")}</div>`;
+            div.onclick = null;
+          };
+          groupList.appendChild(div);
+        });
+
+        document.getElementById("totalCount").textContent = total;
       });
-
-      document.getElementById('totalCount').textContent = total;
     }
 
     function goBack() {
-      document.getElementById("formContainer").style.display = "flex";
       document.getElementById("creditContainer").style.display = "none";
+      document.getElementById("formContainer").style.display = "flex";
     }
 
     function openAdminPanel() {
@@ -206,29 +205,30 @@
         return;
       }
 
-      get(refSubmissions).then(snapshot => {
+      db.ref("submissions").once("value", (snapshot) => {
         const data = snapshot.val();
-        const list = document.getElementById("adminList");
-        list.innerHTML = "";
+        const adminList = document.getElementById("adminList");
+        adminList.innerHTML = "";
 
         if (!data) {
-          list.innerHTML = "<p>신청된 데이터가 없습니다.</p>";
+          adminList.innerHTML = "<p>신청자가 없습니다.</p>";
           return;
         }
 
-        Object.entries(data).forEach(([id, item]) => {
+        for (const id in data) {
+          const item = data[id];
           const div = document.createElement("div");
-          div.innerHTML = `${item.nickname} - ${item.group} - ${item.percent}% <button onclick="deleteItem('${id}')">삭제</button>`;
-          list.appendChild(div);
-        });
+          div.innerHTML = `${item.nickname} - ${item.group} - ${item.percent}% 
+            <button onclick="deleteSubmission('${id}')">삭제</button>`;
+          adminList.appendChild(div);
+        }
 
         document.getElementById("adminPanel").style.display = "block";
       });
     }
 
-    function deleteItem(id) {
-      const dbRef = ref(db, `submissions/${id}`);
-      dbRef.remove();
+    function deleteSubmission(id) {
+      db.ref("submissions/" + id).remove();
       alert("삭제되었습니다. 새로고침 해주세요.");
     }
   </script>
