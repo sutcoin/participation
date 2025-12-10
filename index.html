@@ -4,117 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>주정산금 자발적 재참여</title>
-  <link href="https://cdn.jsdelivr.net/npm/suitcss-base@6.1.0/index.css" rel="stylesheet" />
-  <style>
-    * {
-      font-family: 'SUIT', sans-serif;
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      padding: 30px 10px;
-      background-color: #f0f0f0;
-      text-align: center;
-    }
-    h1 {
-      font-size: 1.8em;
-      margin-bottom: 15px;
-    }
-    .container {
-      background: white;
-      padding: 30px 20px;
-      max-width: 600px;
-      margin: 0 auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .btn {
-      display: inline-block;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: none;
-      font-weight: bold;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    .btn-submit { background-color: #28a745; color: white; }
-    .btn-view { background-color: #007bff; color: white; }
-    .btn-admin { background-color: #6c757d; color: white; }
+  <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
+  <script type="module">
+    // Firebase SDK import
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 1em;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .highlight {
-      font-weight: bold;
-      color: red;
-      font-size: 1.2em;
-    }
-    .group-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
-      font-size: 1.1em;
-      cursor: pointer;
-    }
-    .nickname-list {
-      margin-top: 10px;
-      text-align: left;
-      padding-left: 10px;
-    }
-    .nickname-list p {
-      margin: 4px 0;
-    }
-    .btn-back {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #42A5F5;
-      color: white;
-      padding: 6px 10px;
-      font-size: 0.9em;
-      border: none;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-
-  <div id="formContainer">
-    <h1>주정산금 자발적 재참여</h1>
-    <div class="container">
-      <input type="text" id="nickname" placeholder="닉네임" />
-      <input type="text" id="group" placeholder="소속 (예: 대전서구)" />
-      <input type="text" id="percent" placeholder="퍼센트 (예: 50)" />
-      <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
-      <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
-      <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
-    </div>
-  </div>
-
-  <div id="creditContainer" style="display: none;">
-    <h1>소속별 참여자 현황</h1>
-    <button class="btn-back" onclick="goBack()">뒤로가기</button>
-    <div class="container">
-      <p>현재 참여한 인원 <span class="highlight" id="totalCount">0</span>명</p>
-      <div id="groupList"></div>
-    </div>
-  </div>
-
-  <div id="adminPanel" style="display: none;" class="container">
-    <h2>관리자 패널</h2>
-    <div id="adminList"></div>
-  </div>
-
-  <!-- Firebase SDK (v8 방식 사용: 작동 보장) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
       authDomain: "participation-4f85e.firebaseapp.com",
@@ -125,112 +21,262 @@
       appId: "1:694493909568:web:1ebf7b9394e2ddce3d05a5",
       measurementId: "G-6T8L975CVQ"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    function normalizeGroup(name) {
-      return name.replace(/\s/g, '').trim();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let submissions = [];
+
+    // 데이터 불러오기
+    function loadSubmissions(callback) {
+      const submissionsRef = ref(db, 'submissions');
+      onValue(submissionsRef, (snapshot) => {
+        submissions = [];
+        snapshot.forEach((childSnapshot) => {
+          submissions.push(childSnapshot.val());
+        });
+        if (callback) callback();
+      });
     }
 
-    function submitForm() {
+    // 제출
+    window.submitForm = () => {
       const nickname = document.getElementById("nickname").value.trim();
-      const group = normalizeGroup(document.getElementById("group").value);
+      let group = document.getElementById("group").value.trim().replace(/\s/g, "");
       const percent = document.getElementById("percent").value.trim();
 
       if (!nickname || !group || !percent) {
-        alert("모든 정보를 입력해주세요.");
+        alert("모든 항목을 입력해주세요.");
         return;
       }
 
-      const data = { nickname, group, percent, timestamp: Date.now() };
-      db.ref("submissions").push(data);
-      alert("신청이 완료되었습니다!");
+      const submission = { nickname, group, percent };
+      const submissionsRef = ref(db, 'submissions');
+      push(submissionsRef, submission);
+
+      alert("신청 완료!");
 
       document.getElementById("nickname").value = "";
       document.getElementById("group").value = "";
       document.getElementById("percent").value = "";
-    }
+    };
 
-    function showCredits() {
-      document.getElementById("formContainer").style.display = "none";
-      document.getElementById("creditContainer").style.display = "block";
+    // 뒤로가기
+    window.goBack = () => {
+      document.getElementById("mainForm").style.display = "block";
+      document.getElementById("creditScreen").style.display = "none";
+      document.getElementById("adminPanel").style.display = "none";
+    };
 
-      db.ref("submissions").once("value", (snapshot) => {
-        const data = snapshot.val();
-        const groupList = document.getElementById("groupList");
-        groupList.innerHTML = "";
-        let total = 0;
-
-        if (!data) {
-          groupList.innerHTML = "<p>참여자가 없습니다.</p>";
-          return;
-        }
-
-        const groupMap = {};
-        for (const id in data) {
-          const entry = data[id];
-          const groupKey = normalizeGroup(entry.group);
-          if (!groupMap[groupKey]) groupMap[groupKey] = [];
-          groupMap[groupKey].push(entry);
-        }
-
-        const sortedGroups = Object.entries(groupMap).sort((a, b) => b[1].length - a[1].length);
-        sortedGroups.forEach(([group, entries]) => {
-          total += entries.length;
-          const div = document.createElement("div");
-          div.className = "group-item";
-          div.innerHTML = `<strong>${group} / ${entries.length}</strong>`;
-          div.onclick = () => {
-            div.innerHTML += `<div class="nickname-list">${entries
-              .map((e) => `<p>${e.nickname} / ${e.percent}%</p>`)
-              .join("")}</div>`;
-            div.onclick = null;
-          };
-          groupList.appendChild(div);
-        });
-
-        document.getElementById("totalCount").textContent = total;
-      });
-    }
-
-    function goBack() {
-      document.getElementById("creditContainer").style.display = "none";
-      document.getElementById("formContainer").style.display = "flex";
-    }
-
-    function openAdminPanel() {
+    // 관리자 모드
+    window.openAdminPanel = () => {
       const pw = prompt("관리자 비밀번호를 입력하세요:");
-      if (pw !== "admin123") {
-        alert("비밀번호가 틀렸습니다.");
+      if (pw === "admin123") {
+        loadSubmissions(updateAdminList);
+        document.getElementById("mainForm").style.display = "none";
+        document.getElementById("creditScreen").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+      } else {
+        alert("비밀번호가 올바르지 않습니다.");
+      }
+    };
+
+    function updateAdminList() {
+      const list = document.getElementById("adminList");
+      list.innerHTML = "";
+      if (submissions.length === 0) {
+        list.innerHTML = "<p>신청된 항목이 없습니다.</p>";
         return;
       }
 
-      db.ref("submissions").once("value", (snapshot) => {
-        const data = snapshot.val();
-        const adminList = document.getElementById("adminList");
-        adminList.innerHTML = "";
-
-        if (!data) {
-          adminList.innerHTML = "<p>신청자가 없습니다.</p>";
-          return;
-        }
-
-        for (const id in data) {
-          const item = data[id];
-          const div = document.createElement("div");
-          div.innerHTML = `${item.nickname} - ${item.group} - ${item.percent}% 
-            <button onclick="deleteSubmission('${id}')">삭제</button>`;
-          adminList.appendChild(div);
-        }
-
-        document.getElementById("adminPanel").style.display = "block";
+      submissions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "admin-item";
+        div.innerHTML = `
+          ${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}
+        `;
+        list.appendChild(div);
       });
     }
 
-    function deleteSubmission(id) {
-      db.ref("submissions/" + id).remove();
-      alert("삭제되었습니다. 새로고침 해주세요.");
+    // 명단 보기
+    window.showCredits = () => {
+      loadSubmissions(() => {
+        document.getElementById("mainForm").style.display = "none";
+        document.getElementById("creditScreen").style.display = "block";
+        renderCredits();
+      });
+    };
+
+    function renderCredits() {
+      if (submissions.length === 0) {
+        document.getElementById("creditText").innerHTML = "<p>명단이 없습니다.</p>";
+        return;
+      }
+
+      const groups = {};
+      submissions.forEach((item) => {
+        const groupKey = item.group;
+        if (!groups[groupKey]) groups[groupKey] = [];
+        groups[groupKey].push(item);
+      });
+
+      const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+
+      let html = `<p class="count">현재 참여한 인원 <span>${submissions.length}</span>명</p>`;
+      sortedGroups.forEach(([group, items]) => {
+        html += `<details><summary>${group} / ${items.length}</summary><ul>`;
+        items.forEach(i => {
+          html += `<li>${i.nickname} / ${i.percent}</li>`;
+        });
+        html += `</ul></details>`;
+      });
+
+      document.getElementById("creditText").innerHTML = html;
     }
+
+    // 초기 로딩
+    window.onload = () => {
+      loadSubmissions();
+    };
   </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'SUIT', sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      padding: 30px 10px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    .btn {
+      padding: 10px 16px;
+      margin: 8px 6px 0 6px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .btn-submit { background-color: #28a745; color: white; }
+    .btn-view   { background-color: #007bff; color: white; }
+    .btn-admin  { background-color: #343a40; color: white; }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    #creditScreen, #adminPanel {
+      display: none;
+    }
+
+    #creditText {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    summary {
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .count {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+
+    .count span {
+      color: red;
+      font-weight: bold;
+      font-size: 1.4em;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    .back-btn {
+      background-color: #3fa9f5;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95em;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      cursor: pointer;
+    }
+
+    #adminList {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .admin-item {
+      padding: 6px 0;
+      border-bottom: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>주정산금 자발적 재참여</h1>
+
+  <div id="mainForm" class="container">
+    <input type="text" id="nickname" placeholder="닉네임" />
+    <input type="text" id="group" placeholder="소속 (예: 대전서구)" />
+    <input type="text" id="percent" placeholder="퍼센트 (예: 50)" />
+
+    <div class="btn-group">
+      <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
+      <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
+      <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
+    </div>
+  </div>
+
+  <div id="creditScreen" class="container">
+    <button class="back-btn" onclick="goBack()">뒤로가기</button>
+    <div id="creditText"></div>
+  </div>
+
+  <div id="adminPanel" class="container">
+    <button class="back-btn" onclick="goBack()">뒤로가기</button>
+    <h3>관리자 모드</h3>
+    <div id="adminList"></div>
+  </div>
 </body>
 </html>
