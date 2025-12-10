@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>주정산금 자발적 재참여</title>
+  <title>소속별 참여자 현황</title>
   <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -14,11 +14,13 @@
       padding: 30px 20px;
       background: #f2f2f2;
     }
+
     h1 {
       text-align: center;
       font-size: 24px;
       margin-bottom: 20px;
     }
+
     .form-container {
       max-width: 400px;
       margin: 0 auto;
@@ -27,11 +29,13 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
+
     label {
       margin-top: 10px;
       font-weight: 600;
       display: block;
     }
+
     input {
       width: 100%;
       padding: 10px;
@@ -40,6 +44,7 @@
       border: 1px solid #ccc;
       border-radius: 8px;
     }
+
     button {
       width: 100%;
       padding: 12px;
@@ -49,6 +54,7 @@
       cursor: pointer;
       margin-top: 5px;
     }
+
     .btn-submit { background: #28a745; color: white; }
     .btn-view { background: #007bff; color: white; }
     .btn-admin { background: #555; color: white; }
@@ -68,26 +74,28 @@
       border-bottom: 1px solid #eee;
       cursor: pointer;
     }
+
     .group-item:hover {
       background: #f9f9f9;
     }
 
     .back-btn {
-      display: inline-block;
       background-color: #5cb6f9;
       color: #fff;
       border: none;
       border-radius: 5px;
-      padding: 6px 14px;
+      padding: 5px 12px;
       font-size: 13px;
       font-weight: bold;
-      margin-top: 10px;
-      margin-bottom: 15px;
       cursor: pointer;
+      position: absolute;
+      top: 15px;
+      left: 15px;
     }
 
     .total-count {
       text-align: center;
+      margin-top: 40px;
       margin-bottom: 15px;
       font-size: 16px;
       font-weight: 500;
@@ -102,7 +110,7 @@
 </head>
 <body>
 
-  <h1 id="mainTitle">주정산금 자발적 재참여</h1>
+  <h1 id="mainTitle">소속별 참여자 현황</h1>
 
   <div class="form-container" id="formContainer">
     <label for="nickname">닉네임</label>
@@ -117,7 +125,6 @@
   </div>
 
   <div class="group-list" id="groupList" style="display:none;">
-    <h1>소속별 참여자 현황</h1>
     <button class="back-btn" onclick="goBack()">뒤로가기</button>
     <div class="total-count">
       현재 참여한 인원 <span class="highlight-number" id="totalCount">0</span>명
@@ -230,7 +237,7 @@
       document.getElementById("groupList").style.display = "none";
       document.getElementById("memberList").style.display = "none";
       document.getElementById("formContainer").style.display = "block";
-      document.getElementById("mainTitle").innerText = "주정산금 자발적 재참여";
+      document.getElementById("mainTitle").innerText = "소속별 참여자 현황";
     }
 
     function openAdmin() {
