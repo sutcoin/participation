@@ -6,11 +6,9 @@
   <title>주정산금 자발적 재참여</title>
   <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet" />
   <script type="module">
-    // Firebase SDK import
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyByg8FeU-3woVufxnLoEMhi4t7-CRlS6BI",
       authDomain: "participation-4f85e.firebaseapp.com",
@@ -24,10 +22,8 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     let submissions = [];
 
-    // 데이터 불러오기
     function loadSubmissions(callback) {
       const submissionsRef = ref(db, 'submissions');
       onValue(submissionsRef, (snapshot) => {
@@ -39,7 +35,6 @@
       });
     }
 
-    // 제출
     window.submitForm = () => {
       const nickname = document.getElementById("nickname").value.trim();
       let group = document.getElementById("group").value.trim().replace(/\s/g, "");
@@ -55,20 +50,17 @@
       push(submissionsRef, submission);
 
       alert("신청 완료!");
-
       document.getElementById("nickname").value = "";
       document.getElementById("group").value = "";
       document.getElementById("percent").value = "";
     };
 
-    // 뒤로가기
     window.goBack = () => {
       document.getElementById("mainForm").style.display = "block";
       document.getElementById("creditScreen").style.display = "none";
       document.getElementById("adminPanel").style.display = "none";
     };
 
-    // 관리자 모드
     window.openAdminPanel = () => {
       const pw = prompt("관리자 비밀번호를 입력하세요:");
       if (pw === "admin123") {
@@ -92,14 +84,11 @@
       submissions.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "admin-item";
-        div.innerHTML = `
-          ${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}
-        `;
+        div.innerHTML = `${index + 1}. ${item.nickname} - ${item.group} - ${item.percent}`;
         list.appendChild(div);
       });
     }
 
-    // 명단 보기
     window.showCredits = () => {
       loadSubmissions(() => {
         document.getElementById("mainForm").style.display = "none";
@@ -135,7 +124,6 @@
       document.getElementById("creditText").innerHTML = html;
     }
 
-    // 초기 로딩
     window.onload = () => {
       loadSubmissions();
     };
@@ -146,24 +134,28 @@
       box-sizing: border-box;
       font-family: 'SUIT', sans-serif;
     }
+
     body {
       margin: 0;
       background: #f0f0f0;
       padding: 30px 10px;
       text-align: center;
     }
+
     h1 {
       font-size: 1.8em;
       margin-bottom: 20px;
     }
+
     .container {
       max-width: 500px;
       margin: 0 auto;
       background: white;
       border-radius: 12px;
       padding: 30px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     input {
       width: 100%;
       padding: 12px;
@@ -172,24 +164,35 @@
       border: 1px solid #ccc;
       font-size: 1em;
     }
+
     .btn {
-      padding: 10px 16px;
-      margin: 8px 6px 0 6px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
       border-radius: 6px;
       border: none;
       font-weight: bold;
       font-size: 1em;
       cursor: pointer;
     }
+
     .btn-submit { background-color: #28a745; color: white; }
     .btn-view   { background-color: #007bff; color: white; }
     .btn-admin  { background-color: #343a40; color: white; }
 
-    .btn-group {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 10px;
+    .back-btn {
+      background-color: #3fa9f5;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95em;
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-250px); /* 중앙 기준으로 왼쪽으로 이동 */
+      cursor: pointer;
     }
 
     #creditScreen, #adminPanel {
@@ -227,20 +230,6 @@
       margin: 4px 0;
     }
 
-    .back-btn {
-      background-color: #3fa9f5;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.95em;
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      cursor: pointer;
-    }
-
     #adminList {
       margin-top: 20px;
       text-align: left;
@@ -261,11 +250,9 @@
     <input type="text" id="group" placeholder="소속 (예: 대전서구)" />
     <input type="text" id="percent" placeholder="퍼센트 (예: 50)" />
 
-    <div class="btn-group">
-      <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
-      <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
-      <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
-    </div>
+    <button class="btn btn-submit" onclick="submitForm()">신청하기</button>
+    <button class="btn btn-view" onclick="showCredits()">재참여 명단 보기</button>
+    <button class="btn btn-admin" onclick="openAdminPanel()">👤 관리자 모드</button>
   </div>
 
   <div id="creditScreen" class="container">
